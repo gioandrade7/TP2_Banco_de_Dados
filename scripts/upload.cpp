@@ -55,7 +55,7 @@ int main(int argc, char *argv[]){
         cout << "\tAUTORES: " << autores << endl;
         cout << "\tCITACOES: " << citacoes << endl;
         cout << "\tATUALIZACAO: " << data_hora << endl;
-        cout << "\tSNIPET: " << snipet << endl;
+        cout << "\tSNIPET: " << snipet << endl << endl;
 
         free(id);
         free(titulo);
