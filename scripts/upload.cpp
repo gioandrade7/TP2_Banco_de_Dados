@@ -62,7 +62,7 @@ int main(int argc, char *argv[]){
         // cout << "\tSNIPET: " << field << endl << endl;
 
     }
-    fclose(arquivo);
+    // fclose(arquivo);
     return 0;
 }
 
