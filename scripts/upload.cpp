@@ -2,23 +2,24 @@
 
 using namespace std;
 
-unsigned int get_next_field(FILE *arquivo, char field[], string pattern) {
+bool get_next_field(FILE *arquivo, char field[], string pattern){
     unsigned int pos = 0;
     char c;
     
-    while (true) {
+    while (pos < 1029) {
         c = getc(arquivo);
-        if (c == EOF) return 1;
+        if (c == EOF) return true;
 
         field[pos] = c;
         if (pos > 0) {
             if ((field[pos-1] == pattern[0]) && (field[pos] == pattern[1])) {
                 field[pos] = '\0';
-                return 0;
+                return false;
             }
         }
         pos++;
     }
+    return false;
 }
 
 int main(int argc, char *argv[]){
@@ -38,30 +39,30 @@ int main(int argc, char *argv[]){
         pattern[1] = 59;
         
         if (get_next_field(arquivo, field, pattern)) break;
-        cout << "ID: " << field << endl;
+        // cout << "ID: " << field << endl;
 
         if (get_next_field(arquivo, field, pattern)) break;
-        cout << "\tTITULO: " << field << endl;
+        // cout << "\tTITULO: " << field << endl;
 
         if (get_next_field(arquivo, field, pattern)) break;
-        cout << "\tANO: " << field << endl;
+        // cout << "\tANO: " << field << endl;
 
         if (get_next_field(arquivo, field, pattern)) break;
-        cout << "\tAUTORES: " << field << endl;
+        // cout << "\tAUTORES: " << field << endl;
         
         if (get_next_field(arquivo, field, pattern)) break;
-        cout << "\tCITACOES: " << field << endl;
+        // cout << "\tCITACOES: " << field << endl;
         
         if (get_next_field(arquivo, field, pattern)) break;
-        cout << "\tATUALIZACAO: " << field << endl;
+        // cout << "\tATUALIZACAO: " << field << endl;
         
         pattern[0] = 13;
         pattern[1] = 10;
         if (get_next_field(arquivo, field, pattern)) break;
-        cout << "\tSNIPET: " << field << endl << endl;
+        // cout << "\tSNIPET: " << field << endl << endl;
 
     }
-    // fclose(arquivo);
+    fclose(arquivo);
     return 0;
 }
 
