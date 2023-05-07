@@ -2,6 +2,9 @@
 #define BLOCO_H
 
 #include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <cstring>
 #include "../Constantes/cte.h"
 #include "../Registro/registro.h"
 
@@ -17,7 +20,7 @@ typedef struct Bloco{
     //Header do Bloco
     HeaderBlock header;
     //Dados do Bloco
-    char bloco[block_size];
+    unsigned char blocoBytes[block_size];
 } Bloco;
 
 Bloco createBloco(){
@@ -27,21 +30,22 @@ Bloco createBloco(){
     return bloco;
 }
 
-Bloco ExtrairBloco(char *bloco){
-    Bloco blocoExtraido;
+Bloco extrairHeader(char *blocoBytes){
+    Bloco bloco;
     int pos = 0;
-    memcpy(&blocoExtraido.header.espacoLivre, bloco, sizeof(int));
+    memcpy(&bloco.header.espacoLivre, blocoBytes, sizeof(int));
     pos += sizeof(int);
-    memcpy(&blocoExtraido.header.numeroRegistros, bloco + pos, sizeof(int));
+    memcpy(&bloco.header.numeroRegistros, blocoBytes + pos, sizeof(int));
     pos += sizeof(int);
-    for(int i = 0; i < blocoExtraido.header.numeroRegistros; i++){
+    for(int i = 0; i < bloco.header.numeroRegistros; i++){
         int offset;
-        memcpy(&offset, bloco + pos, sizeof(int));
+        memcpy(&offset, blocoBytes + pos, sizeof(int));
         pos += sizeof(int);
-        blocoExtraido.header.offsetRegistros.push_back(offset);
+        bloco.header.offsetRegistros.push_back(offset);
     }
-    memcpy(&blocoExtraido.bloco, bloco, block_size);
-    return blocoExtraido;
+    // Copia o vetor de bytes para o vetor do bloco
+    memcpy(bloco.blocoBytes, blocoBytes, block_size);
+    return bloco;
 }
 
 void printBloco(Bloco *bloco){
@@ -54,16 +58,82 @@ void printBloco(Bloco *bloco){
     cout << endl;
 }
 
-// Bloco insertInBloco(Registro *registro, Bloco *bloco){
-//     if(bloco->header.espacoLivre < registro->tamanhoRegistro){
-//         return false;
-//     }
+bool inserirRegistro(Bloco *bloco, Registro &registro) {
 
-//     bloco->header.espacoLivre -= registro->tamanhoRegistro;
-//     bloco->header.numeroRegistros++;
-//     bloco->header.tamanhoHeader += sizeof(int);
-//     bloco->header.offsetRegistros.push_back(bloco->header.tamanhoHeader + registro->tamanhoRegistro);
-    
-// }
+    if (bloco->header.espacoLivre < registro.tamanhoRegistro + sizeof(int)) {
+        return false;
+    }
+
+    int posicaoInsercao;
+
+    if(bloco->header.numeroRegistros == 0){
+        posicaoInsercao = block_size - registro.tamanhoRegistro;
+    }
+    else{
+        posicaoInsercao = bloco->header.offsetRegistros.back() - registro.tamanhoRegistro;
+    }
+    int novoOffset = posicaoInsercao;
+
+    //memcpy(&bloco->blocoBytes[posicaoInsercao], &registro, registro.tamanhoRegistro);
+    //posicaoInsercao += registro.tamanhoRegistro;
+
+    // Copia os dados do registro para o vetor do bloco
+    memcpy(&bloco->blocoBytes[posicaoInsercao], &registro.id, sizeof(int));
+    posicaoInsercao += sizeof(int);
+
+    memcpy(&bloco->blocoBytes[posicaoInsercao], &registro.tamanhoRegistro, sizeof(int));
+    posicaoInsercao += sizeof(int);
+
+    memcpy(&bloco->blocoBytes[posicaoInsercao], &registro.offsetAutores, sizeof(int));
+    posicaoInsercao += sizeof(int);
+
+    memcpy(&bloco->blocoBytes[posicaoInsercao], &registro.offsetSnippet, sizeof(int));
+    posicaoInsercao += sizeof(int);
+
+    memcpy(&bloco->blocoBytes[posicaoInsercao], &registro.ano, sizeof(int));
+    posicaoInsercao += sizeof(int);
+
+    memcpy(&bloco->blocoBytes[posicaoInsercao], &registro.citacoes, sizeof(int));
+    posicaoInsercao += sizeof(int);
+
+    memcpy(&bloco->blocoBytes[posicaoInsercao], registro.atualizacao.c_str(), registro.atualizacao.size()+1);
+    posicaoInsercao += registro.atualizacao.size()+1;
+
+    memcpy(&bloco->blocoBytes[posicaoInsercao], registro.titulo.c_str(), registro.titulo.size()+1);
+    posicaoInsercao += registro.titulo.size()+1;
+
+    memcpy(&bloco->blocoBytes[posicaoInsercao], registro.autores.c_str(), registro.autores.size()+1);
+    posicaoInsercao += registro.autores.size()+1;
+
+    memcpy(&bloco->blocoBytes[posicaoInsercao], registro.snippet.c_str(), registro.snippet.size()+1);
+    posicaoInsercao += registro.snippet.size()+1;
+
+    // Atualiza o header do bloco
+    bloco->header.espacoLivre -= registro.tamanhoRegistro;
+    bloco->header.numeroRegistros++;
+
+    // Adiciona o novo offset do registro no vetor de offsets
+    bloco->header.offsetRegistros.push_back(novoOffset);
+
+    posicaoInsercao = 0;
+
+    //memcpy(&bloco->blocoBytes[posicaoInsercao], &bloco->header, sizeof(int));
+
+
+    // Copia as informações do header para o vetor de bytes do bloco
+    memcpy(&bloco->blocoBytes[posicaoInsercao], &bloco->header.espacoLivre, sizeof(int));
+    posicaoInsercao += sizeof(int);
+
+    memcpy(&bloco->blocoBytes[posicaoInsercao], &bloco->header.numeroRegistros, sizeof(int));
+    posicaoInsercao += sizeof(int);
+
+    // Copia os offsets dos registros para o vetor de bytes do bloco
+    for (int i = 0; i < bloco->header.numeroRegistros; i++) {
+        memcpy(&bloco->blocoBytes[posicaoInsercao], &bloco->header.offsetRegistros[i], sizeof(int));
+        posicaoInsercao += sizeof(int);
+    }
+
+    return true;
+}
 
 #endif
