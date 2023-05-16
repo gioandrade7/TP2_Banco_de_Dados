@@ -20,11 +20,13 @@ bool get_next_field(FILE *arquivo, char field[], string pattern){
                 return false;
             }
         }
-
         field[pos] = c;
-        if (pos > 0) {
+        if(pos > 0){
             if ((field[pos-1] == pattern[0]) && (field[pos] == pattern[1])) {
-                field[pos] = '\0';
+                field[pos-1] = '\0';
+                for(int i = 1; i < pos; i++){
+                    field[i-1] = field[i];
+                }
                 return false;
             }
         }
@@ -35,12 +37,12 @@ bool get_next_field(FILE *arquivo, char field[], string pattern){
 
 int main(int argc, char *argv[]){
 
-    FILE *arquivo /*,arq*/;
+    FILE *arquivo/*, *arq*/;
     char char_curr, char_prev;
     char pattern[2], field[1030];
 
     arquivo = fopen(argv[1], "r");
-    // arq = fopen("arqTeste.txt", "wt");
+    //arq = fopen("arqTeste.txt", "wt");
     if (!arquivo) {
         cerr << "Não foi possível abrir o arquivo de entrada!\n";
         return -1;
@@ -52,7 +54,7 @@ int main(int argc, char *argv[]){
         
         if (get_next_field(arquivo, field, pattern)) break;
         //cout << "ID: " << field << " || ";
-       // fprintf(arq, "ID: %s || ", field);
+        //fprintf(arq, "ID: %s || ", field);
 
         if (get_next_field(arquivo, field, pattern)) break;
         //cout << "\tTITULO: " << field << " || ";
@@ -78,10 +80,10 @@ int main(int argc, char *argv[]){
         pattern[1] = 10;
         if (get_next_field(arquivo, field, pattern)) break;
         //cout << "\tSNIPET: " << field << endl << endl;
-        //fprintf(arq, "\tSNIPET: %s || ", field);
+        //fprintf(arq, "\tSNIPET: %s || \n", field);
 
     }
-    // fclose(arquivo);
+    fclose(arquivo);
+   // fclose(arq);
     return 0;
 }
-
