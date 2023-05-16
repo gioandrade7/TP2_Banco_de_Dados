@@ -10,6 +10,17 @@ bool get_next_field(FILE *arquivo, char field[], string pattern){
         c = getc(arquivo);
         if (c == EOF) return true;
 
+        if(pos == 0){
+            if(c == pattern[1]){
+                field[0] = 'N';
+                field[1] = 'U';
+                field[2] = 'L';
+                field[3] = 'L';
+                field[4] = '\0';
+                return false;
+            }
+        }
+
         field[pos] = c;
         if (pos > 0) {
             if ((field[pos-1] == pattern[0]) && (field[pos] == pattern[1])) {
@@ -24,13 +35,14 @@ bool get_next_field(FILE *arquivo, char field[], string pattern){
 
 int main(int argc, char *argv[]){
 
-    FILE *arquivo;
+    FILE *arquivo /*,arq*/;
     char char_curr, char_prev;
     char pattern[2], field[1030];
 
-    arquivo = fopen("artigo.csv", "r");
+    arquivo = fopen(argv[1], "r");
+    // arq = fopen("arqTeste.txt", "wt");
     if (!arquivo) {
-        cerr << "Não foi possível abrir o arquivo de entrada!";
+        cerr << "Não foi possível abrir o arquivo de entrada!\n";
         return -1;
     }
 
@@ -39,27 +51,34 @@ int main(int argc, char *argv[]){
         pattern[1] = 59;
         
         if (get_next_field(arquivo, field, pattern)) break;
-        // cout << "ID: " << field << endl;
+        //cout << "ID: " << field << " || ";
+       // fprintf(arq, "ID: %s || ", field);
 
         if (get_next_field(arquivo, field, pattern)) break;
-        // cout << "\tTITULO: " << field << endl;
+        //cout << "\tTITULO: " << field << " || ";
+        //fprintf(arq, "\tTITULO: %s || ", field);
 
         if (get_next_field(arquivo, field, pattern)) break;
-        // cout << "\tANO: " << field << endl;
+        //cout << "\tANO: " << field << " || ";
+        //fprintf(arq, "\tANO: %s || ", field);
 
         if (get_next_field(arquivo, field, pattern)) break;
-        // cout << "\tAUTORES: " << field << endl;
+        //cout << "\tAUTORES: " << field << " || ";
+        //fprintf(arq, "\tAUTORES: %s || ", field);
         
         if (get_next_field(arquivo, field, pattern)) break;
-        // cout << "\tCITACOES: " << field << endl;
+        //cout << "\tCITACOES: " << field << " || ";
+        //fprintf(arq, "\tCITACOES: %s || ", field);
         
         if (get_next_field(arquivo, field, pattern)) break;
-        // cout << "\tATUALIZACAO: " << field << endl;
+        //cout << "\tATUALIZACAO: " << field << " || ";
+        //fprintf(arq, "\tATUALIZACAO: %s || ", field);
         
         pattern[0] = 13;
         pattern[1] = 10;
         if (get_next_field(arquivo, field, pattern)) break;
-        // cout << "\tSNIPET: " << field << endl << endl;
+        //cout << "\tSNIPET: " << field << endl << endl;
+        //fprintf(arq, "\tSNIPET: %s || ", field);
 
     }
     // fclose(arquivo);
