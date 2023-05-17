@@ -1,8 +1,9 @@
-#ifndef REGISTRO_H
-#define REGISTRO_H
+#ifndef REGISTRO_HPP
+#define REGISTRO_HPP
 
 #include <bits/stdc++.h>
 #include <string>
+
 using namespace std;
 
 
@@ -11,8 +12,6 @@ typedef struct Registro{
 
     //Header do Registro
     int tamanhoRegistro;
-    int offsetAutores;
-    int offsetSnippet;
     //Dados do Registro
     
     int ano;
@@ -27,17 +26,27 @@ void sizeRegistro(Registro *registro){
     int size = 0;
     size += sizeof(int); //id
     size += sizeof(int); //tamanhoRegistro
-    size += sizeof(int); //offsetAutores
-    size += sizeof(int); //offsetSnippet
     size += sizeof(int); //ano
     size += sizeof(int); //citacoes
     size += registro->atualizacao.size()+1;
     size += registro->titulo.size()+1;
-    registro->offsetAutores = size;
     size += registro->autores.size()+1;
-    registro->offsetSnippet = size;
     size += registro->snippet.size()+1;
     registro->tamanhoRegistro = size;
+}
+
+void printRegistro(Registro registro){
+    cout << endl;
+    cout << "##############################################" << endl;
+    cout << "ID: " << registro.id << endl;
+    cout << "Tamanho do Registro: " << registro.tamanhoRegistro << endl;
+    cout << "Ano: " << registro.ano << endl;
+    cout << "Citacoes: " << registro.citacoes << endl;
+    cout << "Atualizacao: " << registro.atualizacao << endl;
+    cout << "Titulo: " << registro.titulo << endl;
+    cout << "Autores: " << registro.autores << endl;
+    cout << "Snippet: " << registro.snippet << endl;
+    cout << "##############################################" << endl << endl;
 }
 
 //Create Registro

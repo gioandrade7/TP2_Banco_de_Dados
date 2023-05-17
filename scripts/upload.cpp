@@ -1,4 +1,6 @@
 #include<iostream>
+#include "./Registro/registro.hpp"
+#include <cstring>
 
 using namespace std;
 
@@ -49,41 +51,57 @@ int main(int argc, char *argv[]){
     }
 
     while (true) {
+        int id;
+        int ano;
+        int citacoes;
+        string atualizacao; //Tamanho fixo
+        string titulo;
+        string autores;
+        string snippet;
+
         pattern[0] = 34;
         pattern[1] = 59;
         
         if (get_next_field(arquivo, field, pattern)) break;
         //cout << "ID: " << field << " || ";
-        //fprintf(arq, "ID: %s || ", field);
+       // fprintf(arq, "ID: %s || ", field);
+       id = stoi(field);
 
         if (get_next_field(arquivo, field, pattern)) break;
         //cout << "\tTITULO: " << field << " || ";
         //fprintf(arq, "\tTITULO: %s || ", field);
+        titulo = field;
 
         if (get_next_field(arquivo, field, pattern)) break;
         //cout << "\tANO: " << field << " || ";
         //fprintf(arq, "\tANO: %s || ", field);
+        ano = stoi(field);
 
         if (get_next_field(arquivo, field, pattern)) break;
         //cout << "\tAUTORES: " << field << " || ";
         //fprintf(arq, "\tAUTORES: %s || ", field);
+        autores = field;
         
         if (get_next_field(arquivo, field, pattern)) break;
         //cout << "\tCITACOES: " << field << " || ";
         //fprintf(arq, "\tCITACOES: %s || ", field);
+        citacoes = stoi(field);
         
         if (get_next_field(arquivo, field, pattern)) break;
         //cout << "\tATUALIZACAO: " << field << " || ";
         //fprintf(arq, "\tATUALIZACAO: %s || ", field);
+        atualizacao = field;
         
         pattern[0] = 13;
         pattern[1] = 10;
         if (get_next_field(arquivo, field, pattern)) break;
         //cout << "\tSNIPET: " << field << endl << endl;
-        //fprintf(arq, "\tSNIPET: %s || \n", field);
+        //fprintf(arq, "\tSNIPET: %s || ", field);
+        snippet = field;
 
+        Registro registro = createRegistro( id,  ano,  citacoes, atualizacao, titulo, autores, snippet);
+        printRegistro(registro);
     }
     fclose(arquivo);
-   // fclose(arq);
     return 0;
 }

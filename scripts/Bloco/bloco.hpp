@@ -1,12 +1,12 @@
-#ifndef BLOCO_H
-#define BLOCO_H
+#ifndef BLOCO_HPP
+#define BLOCO_HPP
 
 #include <bits/stdc++.h>
 #include <iostream>
 #include <vector>
 #include <cstring>
-#include "../Constantes/cte.h"
-#include "../Registro/registro.h"
+#include "../Constantes/cte.hpp"
+#include "../Registro/registro.hpp"
 
 using namespace std;
 
@@ -20,15 +20,23 @@ typedef struct Bloco{
     //Header do Bloco
     HeaderBlock header;
     //Dados do Bloco
-    unsigned char blocoBytes[block_size];
+    unsigned char blocoBytes[BLOCO_SIZE];
 } Bloco;
 
 Bloco createBloco(){
     Bloco bloco;
-    bloco.header.espacoLivre = block_size;
+    bloco.header.espacoLivre = BLOCO_SIZE - 2*sizeof(int); //Tirando o espaço ocupado pelo header
     bloco.header.numeroRegistros = 0;
+
+    bloco.blocoBytes[0] = bloco.header.espacoLivre;
+    bloco.blocoBytes[1] = bloco.header.numeroRegistros;
+
+    for(int i=2;i<BLOCO_SIZE;i++){
+        bloco.blocoBytes[i] = 0;
+    } 
     return bloco;
 }
+
 
 Bloco extrairHeader(char *blocoBytes){
     Bloco bloco;
@@ -44,7 +52,7 @@ Bloco extrairHeader(char *blocoBytes){
         bloco.header.offsetRegistros.push_back(offset);
     }
     // Copia o vetor de bytes para o vetor do bloco
-    memcpy(bloco.blocoBytes, blocoBytes, block_size);
+    memcpy(bloco.blocoBytes, blocoBytes, BLOCO_SIZE);
     return bloco;
 }
 
@@ -67,7 +75,7 @@ bool inserirRegistro(Bloco *bloco, Registro &registro) {
     int posicaoInsercao;
 
     if(bloco->header.numeroRegistros == 0){
-        posicaoInsercao = block_size - registro.tamanhoRegistro;
+        posicaoInsercao = BLOCO_SIZE - registro.tamanhoRegistro;
     }
     else{
         posicaoInsercao = bloco->header.offsetRegistros.back() - registro.tamanhoRegistro;
@@ -82,12 +90,6 @@ bool inserirRegistro(Bloco *bloco, Registro &registro) {
     posicaoInsercao += sizeof(int);
 
     memcpy(&bloco->blocoBytes[posicaoInsercao], &registro.tamanhoRegistro, sizeof(int));
-    posicaoInsercao += sizeof(int);
-
-    memcpy(&bloco->blocoBytes[posicaoInsercao], &registro.offsetAutores, sizeof(int));
-    posicaoInsercao += sizeof(int);
-
-    memcpy(&bloco->blocoBytes[posicaoInsercao], &registro.offsetSnippet, sizeof(int));
     posicaoInsercao += sizeof(int);
 
     memcpy(&bloco->blocoBytes[posicaoInsercao], &registro.ano, sizeof(int));

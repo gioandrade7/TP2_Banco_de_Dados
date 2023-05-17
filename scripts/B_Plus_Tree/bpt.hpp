@@ -1,8 +1,8 @@
-#ifndef BPT_H
-#define BPT_H
+#ifndef BPT_HPP
+#define BPT_HPP
 
 #include<iostream>
-#include "../Constantes/cte.h"
+#include "../Constantes/cte.hpp"
 #include <bits/stdc++.h>
 
 

@@ -1,5 +1,5 @@
 
-#include "bpt.h"
+#include "bpt.hpp"
 
 int main(){
     Node no = create_tree();
