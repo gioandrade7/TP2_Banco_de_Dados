@@ -11,28 +11,40 @@ bool get_next_field(FILE *arquivo, char field[], string pattern){
     while (pos < 1029) {
         c = getc(arquivo);
         if (c == EOF) return true;
-
-        if(pos == 0){
-            if(c == pattern[1]){
-                field[0] = 'N';
-                field[1] = 'U';
-                field[2] = 'L';
-                field[3] = 'L';
-                field[4] = '\0';
-                return false;
-            }
-        }
-        field[pos] = c;
-        if(pos > 0){
-            if ((field[pos-1] == pattern[0]) && (field[pos] == pattern[1])) {
-                field[pos-1] = '\0';
-                for(int i = 1; i < pos; i++){
-                    field[i-1] = field[i];
+        if(c == 0 || (c >= 7 && c <= 13 ) || (c >= 32 && c <=126)){
+            if(pos == 0){
+                if(c == ';'){
+                    field[0] = 'N';
+                    field[1] = 'U';
+                    field[2] = 'L';
+                    field[3] = 'L';
+                    field[4] = '\0';                  
+                    return false;
                 }
-                return false;
             }
+            field[pos] = c;
+            if(pos > 0){
+                if(field[0] == 'N' && field[1] == 'U' && field[2] == 'L' && field[3] == 'L'){
+                    if(field[pos] == 59 ){
+                        field[pos] = '\0';
+                        return false;
+                    }   
+                    else if(field[pos-1] == 13 && field[pos] == 10){
+                        field[pos-1] = '\0';
+                        return false;
+                    }
+                }
+                if ((field[pos-1] == pattern[0]) && (field[pos] == pattern[1])) {
+                    if(pattern[0] == 34){field[pos-1] = '\0';}
+                    else{field[pos-2] = '\0';}
+                    for(int i = 1; i < pos; i++){
+                        field[i-1] = field[i];
+                    }
+                    return false;
+                }
+            }
+            pos++;
         }
-        pos++;
     }
     return false;
 }
