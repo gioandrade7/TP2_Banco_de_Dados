@@ -13,13 +13,13 @@ using namespace std;
 //TODO Teste para encontrar os parâmetros dos buckets
 
 typedef struct HashTable{
-  Bucket table[HASH_SIZE];
+  Bucket *table[HASH_SIZE];
 } HashTable;
 
-HashTable createHash(ofstream &file){
-  HashTable hashTable;
+HashTable* createHash(ofstream &binDataFile){
+  HashTable *hashTable = new HashTable();
   for(int i = 0; i < HASH_SIZE; i++){
-    hashTable.table[i] = createBucket(file);
+    hashTable->table[i] = createBucket(binDataFile);
   }
   return hashTable;
 }
@@ -37,6 +37,53 @@ int hashFunction(int key) {
     return result;
 }
 
+bool insertRegistroHashTable(HashTable *hashtable, Registro registro, ofstream &dataFileWrite, ifstream &dataFileRead){
+  int key = hashFunction(registro.id);
 
+  Bucket *bucket = hashtable->table[key];
+  Bloco *bloco;
+
+
+  for(int blocoId : bucket->blocos){
+    int blockAddress = (blocoId * BLOCO_SIZE) + (key * BUCKET_SIZE * BLOCO_SIZE);
+    bloco = loadBloco(blockAddress, dataFileRead);
+    // cout << endl << endl << "Bloco " << blocoId << endl <<"tamanho do registro: " << registro.tamanhoRegistro<<endl<<endl;
+    // printBloco(bloco);
+    if(bloco->header.espacoLivre >= (registro.tamanhoRegistro + sizeof(int))){
+      //Inserir na árvore 1
+      //Inserir na árvore 2
+      //Inserir no bloco
+      writeRegistroBucket(blockAddress, bloco, registro, dataFileWrite);
+      // printBloco(bloco);
+      return true;
+    }
+  }
+  return false;
+}
+
+Registro * searchRegistroById(int registroId, ifstream &dataFileRead){
+  int key = hashFunction(registroId);
+  int blockAddress;
+  Bloco *bloco;
+  Registro *registro;
+
+  for(int blocoId = 0; blocoId < BUCKET_SIZE; blocoId++){
+    blockAddress = (blocoId * BLOCO_SIZE) + (key * BUCKET_SIZE * BLOCO_SIZE);
+    bloco = loadBloco(blockAddress, dataFileRead);
+
+    // cout << endl <<endl<< "Procurando no Bloco " << blocoId << endl;
+    // printBloco(bloco);
+    if(bloco->header.numeroRegistros == 0) return NULL;
+
+    registro = searchRegistroBloco(bloco, registroId);
+    
+    if(registro != NULL){
+      cout << "Foi percorrido " << blocoId+1 << " blocos para encontrar o Registro!" << endl;
+      return registro;
+    }
+
+  }
+  return NULL;
+}
 
 #endif

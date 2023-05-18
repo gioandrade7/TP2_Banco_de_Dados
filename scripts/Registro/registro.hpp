@@ -50,7 +50,7 @@ void printRegistro(Registro registro){
 }
 
 //Create Registro
-Registro createRegistro(int id, int ano, int citacoes, string atualizacao, string titulo, string autores, string snippet){
+Registro createRegistro(int id = 0, int ano = 0, int citacoes = 0, string atualizacao = "NULL", string titulo = "NULL", string autores = "NULL", string snippet = "NULL"){
     Registro registro;
     registro.id = id;
     registro.ano = ano;
