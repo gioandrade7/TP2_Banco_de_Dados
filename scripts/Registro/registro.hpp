@@ -1,7 +1,6 @@
 #ifndef REGISTRO_HPP
 #define REGISTRO_HPP
 
-#include <bits/stdc++.h>
 #include <string>
 
 using namespace std;
@@ -39,7 +38,7 @@ void printRegistro(Registro registro){
     cout << endl;
     cout << "##############################################" << endl;
     cout << "ID: " << registro.id << endl;
-    cout << "Tamanho do Registro: " << registro.tamanhoRegistro << endl;
+    // cout << "Tamanho do Registro: " << registro.tamanhoRegistro << endl;
     cout << "Ano: " << registro.ano << endl;
     cout << "Citacoes: " << registro.citacoes << endl;
     cout << "Atualizacao: " << registro.atualizacao << endl;

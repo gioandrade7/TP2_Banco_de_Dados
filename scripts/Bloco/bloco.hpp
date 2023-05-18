@@ -1,7 +1,6 @@
 #ifndef BLOCO_HPP
 #define BLOCO_HPP
 
-#include <bits/stdc++.h>
 #include <iostream>
 #include <vector>
 #include <cstring>

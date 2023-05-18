@@ -40,11 +40,11 @@ Bloco * loadBloco(int blockAddress, ifstream &binDataFile){
 
 bool writeRegistroBucket(int blockAddress, Bloco *bloco, Registro registro, ofstream &dataFileWrite){
     insertRegistroBloco(bloco, registro); //Dar uma olhada
-    char buffer[BLOCO_SIZE];
-    memcpy(buffer, bloco->blocoBytes, BLOCO_SIZE);
+    // char buffer[BLOCO_SIZE];
+    // memcpy(buffer, bloco->blocoBytes, BLOCO_SIZE);
 
     dataFileWrite.seekp(blockAddress);
-    dataFileWrite.write(reinterpret_cast<char*>(buffer), BLOCO_SIZE);
+    dataFileWrite.write(reinterpret_cast<char*>(bloco->blocoBytes), BLOCO_SIZE);
     return true;
 }
 

@@ -59,10 +59,15 @@ int main(int argc, char *argv[]){
 
     arquivo = fopen(argv[1], "r");
     //arq = fopen("arqTeste.txt", "wt");
+    if(argc != 2){
+        cout << "Usage: ./upload <filePath>" << endl;
+        return 0;
+    }
     if (!arquivo) {
         cerr << "Não foi possível abrir o arquivo de entrada!\n";
         return -1;
     }
+
 
     string dataFilePath = "Arquivos/dataFile.bin";
 
@@ -73,10 +78,12 @@ int main(int argc, char *argv[]){
         return 1;
     }
 
+
     // Criação da tabela hash 
     cout << "Criando a Tabela Hash..." << endl;
     HashTable* hashTable = createHash(dataFileWrite);
     cout << "Tabela hash criada com sucesso!" << endl;
+    delete hashTable;
 
     //Abertura do arquivo de dados organizado por hashing
     ifstream dataFileRead(dataFilePath, ios::binary | ios::in);
@@ -84,6 +91,7 @@ int main(int argc, char *argv[]){
         cerr << "Erro ao abrir o arquivo de dados!" << endl;
         return 1;
     }
+
 
     cout << "Iniciando a inserção dos registros no arquivo de dados e criação dos índices..." << endl;
 
@@ -100,8 +108,7 @@ int main(int argc, char *argv[]){
         pattern[1] = 59;
         
         if (get_next_field(arquivo, field, pattern)) break;
-       id = stoi(field);
-
+        id = stoi(field);
 
         if (get_next_field(arquivo, field, pattern)) break;
         titulo = field;
@@ -124,49 +131,17 @@ int main(int argc, char *argv[]){
         snippet = field;
 
         Registro registro = createRegistro( id,  ano,  citacoes, atualizacao, titulo, autores, snippet);
-        printRegistro(registro);
+        // printRegistro(registro);
 
         // Inserção do registro no arquivo de dados
-        insertRegistroHashTable(hashTable, registro, dataFileWrite, dataFileRead);
+        // insertRegistroHashTable(hashTable, registro, dataFileWrite, dataFileRead);
+        insertRegistroHashTable(registro, dataFileWrite, dataFileRead);
     }
-
-    // Registro registro = createRegistro( 0,  2022,  2, "Hoje, mas nao sei a hora", "Deu certo", "Deus", "Deu bom familia");
-    // // printRegistro(registro);
-    // Registro registro2 = createRegistro( 1,  2022,  2, "Amanha, mas nao sei a hora", "Deu certo", "Deus", "Deu bom familia");
-    // Registro registro3 = createRegistro( 2,  2023,  2, "Ontem, mas nao sei a hora", "Deu certo", "Deus", "Deu bom familia");
     
-
-    // insertRegistroHashTable(hashTable, registro, dataFileWrite, dataFileRead);
-    // insertRegistroHashTable(hashTable, registro2, dataFileWrite, dataFileRead);
-    // insertRegistroHashTable(hashTable, registro3, dataFileWrite, dataFileRead);
-
-    // for( int i=3; i<8000; i++){
-    //     cout << endl << endl << endl << "Inserindo registro " << i << endl << endl;
-    //    registro = createRegistro( i,  2022+i,  2, "Hoje, mas nao sei a hora", "Deu certo", "Deus", "Deu bom familia"); 
-    //     insertRegistroHashTable(hashTable, registro, dataFileWrite, dataFileRead);
-    // }
-
     cout << "Inserção dos registros no arquivo de dados e criação dos índices concluída!" << endl << endl;
     
-    // cout <<"Buscando..." << endl;
-    // Registro *out = searchRegistroById(640, dataFileRead);
-    // if (out!=NULL )printRegistro(*out);
-    // else cout << "Registro não encontrado!" << endl;
-
-    // cout << endl<< endl<<"Buscando..." << endl;
-    // out = searchRegistroById(6515, dataFileRead);
-    // if (out!=NULL )printRegistro(*out);
-    // else cout << "Registro não encontrado!" << endl;
-
-    // cout << endl<< endl<<"Buscando..." << endl;
-    // out = searchRegistroById(65105, dataFileRead);
-    // if (out!=NULL )printRegistro(*out);
-    // else cout << "Registro não encontrado!" << endl;
-
-    // cout << endl<< endl<<"Buscando..." << endl;
-    // out = searchRegistroById(545612, dataFileRead);
-    // if (out!=NULL )printRegistro(*out);
-    // else cout << "Registro não encontrado!" << endl;
+    dataFileWrite.close();
+    dataFileRead.close();
 
     fclose(arquivo);
     return 0;

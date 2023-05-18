@@ -1,7 +1,6 @@
 #ifndef CTE_HPP
 #define CTE_HPP
 
-#include <bits/stdc++.h>
 using namespace std;
 
 const int BLOCO_SIZE = 4096;//Tamanho do bloco em bytes
