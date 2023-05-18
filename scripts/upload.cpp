@@ -87,90 +87,86 @@ int main(int argc, char *argv[]){
 
     cout << "Iniciando a inserção dos registros no arquivo de dados e criação dos índices..." << endl;
 
-    // while (true) {
-    //     int id;
-    //     int ano;
-    //     int citacoes;
-    //     string atualizacao; //Tamanho fixo
-    //     string titulo;
-    //     string autores;
-    //     string snippet;
+    while (true) {
+        int id;
+        int ano;
+        int citacoes;
+        string atualizacao; //Tamanho fixo
+        string titulo;
+        string autores;
+        string snippet;
 
-    //     pattern[0] = 34;
-    //     pattern[1] = 59;
+        pattern[0] = 34;
+        pattern[1] = 59;
         
-    //     if (get_next_field(arquivo, field, pattern)) break;
-    //     //cout << "ID: " << field << " || ";
-    //    // fprintf(arq, "ID: %s || ", field);
-    //    id = stoi(field);
+        if (get_next_field(arquivo, field, pattern)) break;
+       id = stoi(field);
 
-    //     if (get_next_field(arquivo, field, pattern)) break;
-    //     //cout << "\tTITULO: " << field << " || ";
-    //     //fprintf(arq, "\tTITULO: %s || ", field);
-    //     titulo = field;
 
-    //     if (get_next_field(arquivo, field, pattern)) break;
-    //     //cout << "\tANO: " << field << " || ";
-    //     //fprintf(arq, "\tANO: %s || ", field);
-    //     ano = stoi(field);
+        if (get_next_field(arquivo, field, pattern)) break;
+        titulo = field;
 
-    //     if (get_next_field(arquivo, field, pattern)) break;
-    //     //cout << "\tAUTORES: " << field << " || ";
-    //     //fprintf(arq, "\tAUTORES: %s || ", field);
-    //     autores = field;
+        if (get_next_field(arquivo, field, pattern)) break;
+        ano = stoi(field);
+
+        if (get_next_field(arquivo, field, pattern)) break;
+        autores = field;
         
-    //     if (get_next_field(arquivo, field, pattern)) break;
-    //     //cout << "\tCITACOES: " << field << " || ";
-    //     //fprintf(arq, "\tCITACOES: %s || ", field);
-    //     citacoes = stoi(field);
+        if (get_next_field(arquivo, field, pattern)) break;
+        citacoes = stoi(field);
         
-    //     if (get_next_field(arquivo, field, pattern)) break;
-    //     //cout << "\tATUALIZACAO: " << field << " || ";
-    //     //fprintf(arq, "\tATUALIZACAO: %s || ", field);
-    //     atualizacao = field;
+        if (get_next_field(arquivo, field, pattern)) break;
+        atualizacao = field;
         
-    //     pattern[0] = 13;
-    //     pattern[1] = 10;
-    //     if (get_next_field(arquivo, field, pattern)) break;
-    //     //cout << "\tSNIPET: " << field << endl << endl;
-    //     //fprintf(arq, "\tSNIPET: %s || ", field);
-    //     snippet = field;
+        pattern[0] = 13;
+        pattern[1] = 10;
+        if (get_next_field(arquivo, field, pattern)) break;
+        snippet = field;
 
-    //     Registro registro = createRegistro( id,  ano,  citacoes, atualizacao, titulo, autores, snippet);
-    //     printRegistro(registro);
+        Registro registro = createRegistro( id,  ano,  citacoes, atualizacao, titulo, autores, snippet);
+        printRegistro(registro);
 
-    //     // Inserção do registro no arquivo de dados
-    //     insertRegistroHashTable(hashTable, registro, dataFileWrite, dataFileRead);
-    // }
-
-    Registro registro = createRegistro( 0,  2022,  2, "Hoje, mas nao sei a hora", "Deu certo", "Deus", "Deu bom familia");
-    // printRegistro(registro);
-    Registro registro2 = createRegistro( 1,  2022,  2, "Amanha, mas nao sei a hora", "Deu certo", "Deus", "Deu bom familia");
-    Registro registro3 = createRegistro( 2,  2023,  2, "Ontem, mas nao sei a hora", "Deu certo", "Deus", "Deu bom familia");
-    
-
-    insertRegistroHashTable(hashTable, registro, dataFileWrite, dataFileRead);
-    insertRegistroHashTable(hashTable, registro2, dataFileWrite, dataFileRead);
-    insertRegistroHashTable(hashTable, registro3, dataFileWrite, dataFileRead);
-
-    for( int i=3; i<8000; i++){
-        cout << endl << endl << endl << "Inserindo registro " << i << endl << endl;
-       registro = createRegistro( i,  2022+i,  2, "Hoje, mas nao sei a hora", "Deu certo", "Deus", "Deu bom familia"); 
+        // Inserção do registro no arquivo de dados
         insertRegistroHashTable(hashTable, registro, dataFileWrite, dataFileRead);
     }
 
+    // Registro registro = createRegistro( 0,  2022,  2, "Hoje, mas nao sei a hora", "Deu certo", "Deus", "Deu bom familia");
+    // // printRegistro(registro);
+    // Registro registro2 = createRegistro( 1,  2022,  2, "Amanha, mas nao sei a hora", "Deu certo", "Deus", "Deu bom familia");
+    // Registro registro3 = createRegistro( 2,  2023,  2, "Ontem, mas nao sei a hora", "Deu certo", "Deus", "Deu bom familia");
+    
+
+    // insertRegistroHashTable(hashTable, registro, dataFileWrite, dataFileRead);
+    // insertRegistroHashTable(hashTable, registro2, dataFileWrite, dataFileRead);
+    // insertRegistroHashTable(hashTable, registro3, dataFileWrite, dataFileRead);
+
+    // for( int i=3; i<8000; i++){
+    //     cout << endl << endl << endl << "Inserindo registro " << i << endl << endl;
+    //    registro = createRegistro( i,  2022+i,  2, "Hoje, mas nao sei a hora", "Deu certo", "Deus", "Deu bom familia"); 
+    //     insertRegistroHashTable(hashTable, registro, dataFileWrite, dataFileRead);
+    // }
+
     cout << "Inserção dos registros no arquivo de dados e criação dos índices concluída!" << endl << endl;
     
-    cout <<"Buscando..." << endl;
-    Registro *out = searchRegistroById(1, dataFileRead);
-    if (out!=NULL )printRegistro(*out);
-    else cout << "Registro não encontrado!" << endl;
+    // cout <<"Buscando..." << endl;
+    // Registro *out = searchRegistroById(640, dataFileRead);
+    // if (out!=NULL )printRegistro(*out);
+    // else cout << "Registro não encontrado!" << endl;
 
-    
+    // cout << endl<< endl<<"Buscando..." << endl;
+    // out = searchRegistroById(6515, dataFileRead);
+    // if (out!=NULL )printRegistro(*out);
+    // else cout << "Registro não encontrado!" << endl;
 
+    // cout << endl<< endl<<"Buscando..." << endl;
+    // out = searchRegistroById(65105, dataFileRead);
+    // if (out!=NULL )printRegistro(*out);
+    // else cout << "Registro não encontrado!" << endl;
 
-
-
+    // cout << endl<< endl<<"Buscando..." << endl;
+    // out = searchRegistroById(545612, dataFileRead);
+    // if (out!=NULL )printRegistro(*out);
+    // else cout << "Registro não encontrado!" << endl;
 
     fclose(arquivo);
     return 0;

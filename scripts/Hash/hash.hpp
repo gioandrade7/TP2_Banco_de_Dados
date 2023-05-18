@@ -47,17 +47,17 @@ bool insertRegistroHashTable(HashTable *hashtable, Registro registro, ofstream &
   for(int blocoId : bucket->blocos){
     int blockAddress = (blocoId * BLOCO_SIZE) + (key * BUCKET_SIZE * BLOCO_SIZE);
     bloco = loadBloco(blockAddress, dataFileRead);
-    // cout << endl << endl << "Bloco " << blocoId << endl <<"tamanho do registro: " << registro.tamanhoRegistro<<endl<<endl;
-    // printBloco(bloco);
     if(bloco->header.espacoLivre >= (registro.tamanhoRegistro + sizeof(int))){
       //Inserir na árvore 1
       //Inserir na árvore 2
       //Inserir no bloco
       writeRegistroBucket(blockAddress, bloco, registro, dataFileWrite);
       // printBloco(bloco);
+      delete bloco;
       return true;
     }
   }
+  delete bloco;
   return false;
 }
 
@@ -79,6 +79,7 @@ Registro * searchRegistroById(int registroId, ifstream &dataFileRead){
     
     if(registro != NULL){
       cout << "Foi percorrido " << blocoId+1 << " blocos para encontrar o Registro!" << endl;
+      delete bloco;
       return registro;
     }
 
