@@ -2,13 +2,20 @@
 #include "bpt.hpp"
 
 int main(){
-    Node no = create_tree();
 
-    add_key_node(&no, 5, 0);
-    add_key_node(&no, 0, 7);
-    add_key_node(&no, 6, 9);
-    add_key_node(&no, 4, 9);
-    imprime_node(no);
+    block *b = create_block(1024);
+    node *root = create_tree(3, b);
+
+    root = insert(root, 5, 2000);
+    root = insert(root, 4, 1810);
+    root = insert(root, 8, 1900);
+    root = insert(root, 6, 2010);
+    root = insert(root, 7, 1750);
+    root = insert(root, 9, 2005);
+
+    printTree(root);
+
+
 }
 
 
