@@ -1,20 +1,16 @@
 #ifndef HASH_HPP
 #define HASH_HPP
 
-// #include "../Constantes/cte.hpp"
 #include "../Bucket/bucket.hpp"
-// #include "../Bloco/bloco.hpp"
-// #include "../Registro/registro.hpp"
-// #include <cstdint>
+
 using namespace std;
 
-
-//TODO Teste para encontrar os parâmetros dos buckets
-
+//Estrutura da Hash, que é composta por um vetor de Buckets
 typedef struct HashTable{
   Bucket *table[HASH_SIZE];
 } HashTable;
 
+//Função que cria a Hash e a insere vazia no arquivo
 HashTable* createHash(ofstream &binDataFile){
   HashTable *hashTable = new HashTable();
   for(int i = 0; i < HASH_SIZE; i++){
@@ -23,6 +19,7 @@ HashTable* createHash(ofstream &binDataFile){
   return hashTable;
 }
 
+//Função que transforma a chave em um índice da Hash. Essa função é baseada na MurMurHash
 int hashFunction(int key) {
     uint32_t ukey = static_cast<uint32_t>(key);
 
@@ -36,59 +33,74 @@ int hashFunction(int key) {
     return result;
 }
 
+//Função que insere o Registro na Hash
 bool insertRegistroHashTable(Registro registro, ofstream &dataFileWrite, ifstream &dataFileRead){
-// bool insertRegistroHashTable(HashTable *hashtable, Registro registro, ofstream &dataFileWrite, ifstream &dataFileRead){
+  //Descobre a chave do registro na Hash (seu índice no vetor)
   int key = hashFunction(registro.id);
 
-  // Bucket *bucket = hashtable->table[key];
-  // Bloco *bloco = NULL;
-
+  //Itera em cada bloco do Bucket
   for(int blocoId = 0; blocoId < BUCKET_SIZE; blocoId++){
-  // for(int blocoId : bucket->blocos){
+
+    //Calcula o endereço do bloco
     int blockAddress = (blocoId * BLOCO_SIZE) + (key * BUCKET_SIZE * BLOCO_SIZE);
+
+    //Carrega o bloco para a memória RAM
     Bloco *bloco = loadBloco(blockAddress, dataFileRead);
-    // cout << endl << endl << "Bloco " << blocoId << endl <<"tamanho do registro: " << registro.tamanhoRegistro<<endl<<endl;
-    // printBloco(bloco);
-    if(bloco->header.espacoLivre >= (registro.tamanhoRegistro + sizeof(int))){
+    
+    //Verifica se o registro cabe no bloco. Se couber, insere o registro no bloco e retorna true. Se não couber, deleta o bloco da RAM e carrega o próximo
+    if(bloco->header.espacoLivre >= (registro.tamanhoRegistro + sizeof(int))){ //Somamos sizeof(int) para considerar o offset que o registro terá ao ser inserido no bloco
       //Inserir na árvore 1
+
       //Inserir na árvore 2
-      //Inserir no bloco
+
+      //Inserindo o registro no bloco
       writeRegistroBucket(blockAddress, bloco, registro, dataFileWrite);
-      // printBloco(bloco);
+      
+      //Apagamos o bloco da memória RAM
       delete bloco;
       return true;
     }
     delete bloco; // Liberando o bloco antes de carregar o próximo
     bloco = NULL;
   }
-  // delete bloco;
+  
   return false;
 }
 
+//Busca um registro na Hash
 Registro * searchRegistroById(int registroId, ifstream &dataFileRead){
+  //Descobre a chave do registro na Hash (seu índice no vetor)
   int key = hashFunction(registroId);
   int blockAddress;
   Bloco *bloco = NULL;
   Registro *registro = NULL;
 
+  //Itera em cada bloco do Bucket
   for(int blocoId = 0; blocoId < BUCKET_SIZE; blocoId++){
+    //Calcula o endereço do bloco
     blockAddress = (blocoId * BLOCO_SIZE) + (key * BUCKET_SIZE * BLOCO_SIZE);
+
+    //Carrega o bloco para a memória RAM
     bloco = loadBloco(blockAddress, dataFileRead);
 
-    // cout << endl <<endl<< "Procurando no Bloco " << blocoId << endl;
-    // printBloco(bloco);
+    //Verifica se o bloco está vazio. Se estiver, retorna NULL. Pois se chegamos até um bloco que o registro deveria estar, mas ele está vazio, quer dizer que não existe o registro
     if(bloco->header.numeroRegistros == 0) {
       delete bloco;
       return NULL;
     }
 
+    //Busca o registro no bloco
     registro = searchRegistroBloco(bloco, registroId);
     
+    //Se o registro foi encontrado, retorna o registro
     if(registro != NULL){
-      cout << "Foi percorrido " << blocoId+1 << " blocos para encontrar o Registro!" << endl;
+      cout << endl << "Foi percorrido " << blocoId+1 << " blocos para encontrar o Registro!" << endl;
+      //imprimir a quantidade total de blocos no arquivo de dados
+      cout << endl << "O arquivo de dados contém " << (BUCKET_SIZE * HASH_SIZE) << " blocos!" << endl;
       return registro;
     }
   }
+  //Se o registro não foi encontrado, retorna NULL
   delete bloco;
   return NULL;
 }

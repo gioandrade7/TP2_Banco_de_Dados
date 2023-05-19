@@ -1,11 +1,8 @@
-// #include "./Registro/registro.hpp"
 #include "./Hash/hash.hpp"
-// #include <cstring>
-// #include <iostream>
-// #include <fstream>
 
 using namespace std;
 
+// Função que retorna o próximo campo do arquivo de entrada (campo do registro), lendo ele até o fim ou até encontrar o padrão caracter por caracter
 bool get_next_field(FILE *arquivo, char field[], string pattern){
     unsigned int pos = 0;
     char c;
@@ -53,25 +50,28 @@ bool get_next_field(FILE *arquivo, char field[], string pattern){
 
 int main(int argc, char *argv[]){
 
-    FILE *arquivo/*, *arq*/;
-    char char_curr, char_prev;
+    FILE *arquivo;
     char pattern[2], field[1030];
 
+    // Abertura do arquivo de entrada
     arquivo = fopen(argv[1], "r");
-    //arq = fopen("arqTeste.txt", "wt");
+    
+    //Conferindo os argumentos
     if(argc != 2){
         cout << "Usage: ./upload <filePath>" << endl;
         return 0;
     }
+
+    //Conferindo se o arquivo foi aberto corretamente
     if (!arquivo) {
         cerr << "Não foi possível abrir o arquivo de entrada!\n";
         return -1;
     }
 
-
+    // Caminho do arquivo de dados que vai ser organizado por Hash
     string dataFilePath = "Arquivos/dataFile.bin";
 
-    // Criando o arquivo de dados em binário que será organizado pelo hash
+    // Criando o arquivo de dados em binário que vai ser organizado por hash
     ofstream dataFileWrite(dataFilePath, ios::binary | ios::out);
     if (!dataFileWrite) {
         cerr << "Erro ao criar o arquivo de dados en binário!" << endl;
@@ -83,6 +83,8 @@ int main(int argc, char *argv[]){
     cout << "Criando a Tabela Hash..." << endl;
     HashTable* hashTable = createHash(dataFileWrite);
     cout << "Tabela hash criada com sucesso!" << endl;
+
+    //Deletando a Tabela Hash da memória RAM, pois usaremos o arquivo de dados organizado por hash em disco
     delete hashTable;
 
     //Abertura do arquivo de dados organizado por hashing
@@ -95,6 +97,7 @@ int main(int argc, char *argv[]){
 
     cout << "Iniciando a inserção dos registros no arquivo de dados e criação dos índices..." << endl;
 
+    //Fazendo a leitura e inserção dos registros
     while (true) {
         int id;
         int ano;
@@ -130,19 +133,18 @@ int main(int argc, char *argv[]){
         if (get_next_field(arquivo, field, pattern)) break;
         snippet = field;
 
+        //Criando o registro
         Registro registro = createRegistro( id,  ano,  citacoes, atualizacao, titulo, autores, snippet);
-        // printRegistro(registro);
 
-        // Inserção do registro no arquivo de dados
-        // insertRegistroHashTable(hashTable, registro, dataFileWrite, dataFileRead);
+        //Inserindo o registro no arquivo de dados e criando os índices
         insertRegistroHashTable(registro, dataFileWrite, dataFileRead);
     }
     
     cout << "Inserção dos registros no arquivo de dados e criação dos índices concluída!" << endl << endl;
     
+    //Fechando os arquivos
     dataFileWrite.close();
     dataFileRead.close();
-
     fclose(arquivo);
     return 0;
 }

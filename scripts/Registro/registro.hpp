@@ -5,7 +5,7 @@
 
 using namespace std;
 
-
+//Estrutura do Registro
 typedef struct Registro{
     int id;
 
@@ -21,12 +21,14 @@ typedef struct Registro{
     string snippet;
 } Registro;
 
+//Calcula o tamanho do registro e atualiza o campo tamanhoRegistro
 void sizeRegistro(Registro *registro){
     int size = 0;
     size += sizeof(int); //id
     size += sizeof(int); //tamanhoRegistro
     size += sizeof(int); //ano
     size += sizeof(int); //citacoes
+    //Nas strings somamos o tamanho da string + 1 (para o \0)
     size += registro->atualizacao.size()+1;
     size += registro->titulo.size()+1;
     size += registro->autores.size()+1;
@@ -34,6 +36,7 @@ void sizeRegistro(Registro *registro){
     registro->tamanhoRegistro = size;
 }
 
+//Imprime o Registro em um Formato específico
 void printRegistro(Registro registro){
     cout << endl;
     cout << "##############################################" << endl;
@@ -48,7 +51,7 @@ void printRegistro(Registro registro){
     cout << "##############################################" << endl << endl;
 }
 
-//Create Registro
+//Cria o Registro
 Registro createRegistro(int id = 0, int ano = 0, int citacoes = 0, string atualizacao = "NULL", string titulo = "NULL", string autores = "NULL", string snippet = "NULL"){
     Registro registro;
     registro.id = id;
