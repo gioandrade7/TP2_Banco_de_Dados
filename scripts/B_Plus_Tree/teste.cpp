@@ -3,17 +3,24 @@
 
 int main(){
 
-    block *b = create_block(1024);
-    node *root = create_tree(3, b);
+    FILE *arq;
+    arq = fopen("BPlusTree.bin", "wb+");
 
-    root = insert(root, 5, 2000);
-    root = insert(root, 4, 1810);
-    root = insert(root, 8, 1900);
-    root = insert(root, 6, 2010);
-    root = insert(root, 7, 1750);
-    root = insert(root, 9, 2005);
+    block *b = create_block(33);
+    node *root = create_tree(5, b);
+
+    root = insert(root, 15, 21);
+    root = insert(root, 25, 31);
+    root = insert(root, 35, 41);
+    root = insert(root, 45, 10);
 
     printTree(root);
+
+   gravaTree(root, arq);
+   node x;
+   fseek(arq, 0, SEEK_SET);
+   fread(&x, sizeof(node), 1, arq);
+   imprime_node(*(node *)x.ptrs[1]);
 
 
 }

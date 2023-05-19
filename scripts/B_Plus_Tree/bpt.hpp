@@ -16,8 +16,7 @@ typedef struct node{
     int *keys; //vetor para as chaves
     struct node *parent; //ponteiro para o nodo pai
     int num_keys; //número de chaves alocadas
-    struct node *next; // no caso de ser folha, aponta para a próxima folha
-
+    
 } node;
 
 int cut(int size){
@@ -48,7 +47,6 @@ node *create_node(){
     new_node->is_leaf = false;
     new_node->parent = NULL;
     new_node->num_keys = 0;
-    new_node->next = NULL;
 
     return new_node;
 }
@@ -162,7 +160,7 @@ node *insert_node_after_split(node *root, node *old_node, int left_index, int ke
         exit(EXIT_FAILURE);
     }
 
-    temp_ptrs = (void **) malloc((2*m+1)*sizeof(void *));
+    temp_ptrs = (void**)malloc((2*m+2)*sizeof(void *));
     if(temp_ptrs == NULL){
         perror("Erro ao criar vetor de ponteiros para blocks temporário !\n");
         exit(EXIT_FAILURE);
@@ -181,7 +179,7 @@ node *insert_node_after_split(node *root, node *old_node, int left_index, int ke
     temp_ptrs[left_index + 1] = right;
     temp_keys[left_index] = key;
 
-    int split = cut(2*m);
+    int split = cut(2*m+1);
     node * new_node = create_node();
     old_node->num_keys = 0;
     int i = 0;
@@ -193,14 +191,16 @@ node *insert_node_after_split(node *root, node *old_node, int left_index, int ke
     old_node->ptrs[i] = temp_ptrs[i];
     int k_prime = temp_keys[split - 1];
     int j = 0;
-    for (++i, j = 0; i < 2*m; i++, j++) {
+    for (++i, j = 0; i < 2*m+1; i++, j++) {
         new_node->ptrs[j] = temp_ptrs[i];
         new_node->keys[j] = temp_keys[i];
         new_node->num_keys++;
     }
     new_node->ptrs[j] = temp_ptrs[i];
-    free(temp_ptrs);
+
     free(temp_keys);
+    free(temp_ptrs);
+    
     new_node->parent = old_node->parent;
     for (i = 0; i <= new_node->num_keys; i++) {
         node *child = (node *)new_node->ptrs[i];
@@ -303,24 +303,6 @@ node *insert(node *root, int key, int offset){
     return insert_leaf_after_split(root, leaf, key, b);
 }
 
-void imprime_node(node no){
-
-    cout << "is_leaf: " << no.is_leaf << endl;
-    cout << "num_keys: " << no.num_keys << endl;
-    cout << "parent: " << no.parent << endl;
-    //cout << "next: " << no.next <<  endl;
-    if(no.num_keys > 0){
-        for(int i = 0; i < no.num_keys; i++){
-            cout << "key " << i << " = " << no.keys[i] << endl;
-        }
-        for(int i = 0; i < no.num_keys; i++){
-            block *x = (block*)no.ptrs[i];
-            cout << "block " << i << " = " << x->offset << endl;
-        }
-    }
-    cout << "next: " << no.ptrs[2*m] << endl;
-}
-
 int pathToLeaves(node *const root, node *child) {
   int length = 0;
   node *c = child;
@@ -331,73 +313,68 @@ int pathToLeaves(node *const root, node *child) {
   return length;
 }
 
-node *q = NULL;
-bool verbose_output = false;
+void imprime_node(node no){
 
-node *dequeue(void) {
-  node *n = q;
-  q = q->next;
-  n->next = NULL;
-  return n;
-}
-
-void enqueue(node *new_node) {
-
-    node *c;
-    if (q == NULL) {
-        q = new_node;
-        q->next = NULL;
-    } 
-    else {
-        c = q;
-        while (c->next != NULL) {
-        c = c->next;
+    cout << "is_leaf: " << no.is_leaf << endl;
+    cout << "num_keys: " << no.num_keys << endl;
+    cout << "parent: " << no.parent << endl;
+    //cout << "next: " << no.next <<  endl;
+    if(no.num_keys > 0){
+        for(int i = 0; i < no.num_keys; i++){
+            cout << "key " << i << " = " << no.keys[i] << endl;
         }
-        c->next = new_node;
-        new_node->next = NULL;
+        for(int i = 0; i <= no.num_keys; i++){
+            block *x = (block*)no.ptrs[i];
+            cout << "block " << i << " = " << x->offset << endl;
+        }
     }
 }
 
-void printTree(node *const root) {
-  node *n = NULL;
-  int i = 0;
-  int rank = 0;
-  int new_rank = 0;
+void printTree(node *const root){
 
-  if (root == NULL) {
-    printf("Empty tree.\n");
-    return;
-  }
-  q = NULL;
-  enqueue(root);
-  while (q != NULL) {
-    n = dequeue();
-    if (n->parent != NULL && n == n->parent->ptrs[0]) {
-      new_rank = pathToLeaves(root, n);
-      if (new_rank != rank) {
-        rank = new_rank;
-        printf("\n");
-      }
+    queue<node*> q;
+    node *c = NULL;
+    int level = 0;
+    int new_level = 0;
+
+    q.push(root);
+
+    while(!q.empty()){
+        c = q.front();
+        q.pop();
+
+        if (c->parent != NULL && c == c->parent->ptrs[0]) {
+            new_level = pathToLeaves(root, c);
+            if (new_level != level) {
+                level = new_level;
+                printf("\n");
+            }
+        }
+        for(int i = 0; i < c->num_keys; i++){
+            cout << c->keys[i] << " ";
+        }
+        if(!c->is_leaf){
+            for(int i = 0; i <= c->num_keys; i++){
+                q.push((node *)c->ptrs[i]);
+            }
+        }
+        cout << "| ";
     }
-    if (verbose_output)
-      printf("(%p)", n);
-    for (i = 0; i < n->num_keys; i++) {
-      if (verbose_output)
-        printf("%p ", n->ptrs[i]);
-      printf("%d ", n->keys[i]);
-    }
-    if (!n->is_leaf)
-      for (i = 0; i <= n->num_keys; i++)
-        enqueue((node *)n->ptrs[i]);
-    if (verbose_output) {
-      if (n->is_leaf)
-        printf("%p ", n->ptrs[2*m]);
-      else
-        printf("%p ", n->ptrs[n->num_keys]);
-    }
-    printf("| ");
-  }
-  printf("\n");
+    cout << endl;
+}
+
+void gravaTree(node *root, FILE *arq){
+
+    fwrite(root, sizeof(node), 1, arq);
+
+    /*queue<node*> q;
+    node *c = NULL;
+
+    q.push(root);
+
+    while(!q.empty()){
+
+    }*/
 }
 
 
