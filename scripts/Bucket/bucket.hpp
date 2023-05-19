@@ -1,10 +1,10 @@
 #ifndef BUCKET_HPP
 #define BUCKET_HPP
 
-#include "../Constantes/cte.hpp"
+// #include "../Constantes/cte.hpp"
 #include "../Bloco/bloco.hpp"
 #include <bits/stdc++.h>
-#include <iostream>
+// #include <iostream>
 
 using namespace std;
 

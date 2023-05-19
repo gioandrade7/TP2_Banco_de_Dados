@@ -1,8 +1,8 @@
 // #include "./Registro/registro.hpp"
 #include "./Hash/hash.hpp"
-#include <cstring>
-#include <iostream>
-#include <fstream>
+// #include <cstring>
+// #include <iostream>
+// #include <fstream>
 
 using namespace std;
 

@@ -1,11 +1,11 @@
 #ifndef HASH_HPP
 #define HASH_HPP
 
-#include "../Constantes/cte.hpp"
+// #include "../Constantes/cte.hpp"
 #include "../Bucket/bucket.hpp"
-#include "../Bloco/bloco.hpp"
-#include "../Registro/registro.hpp"
-#include <cstdint>
+// #include "../Bloco/bloco.hpp"
+// #include "../Registro/registro.hpp"
+// #include <cstdint>
 using namespace std;
 
 
