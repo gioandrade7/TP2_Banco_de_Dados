@@ -1,6 +1,17 @@
 
 #include "bpt.hpp"
 
+void imprime_arvore(unsigned long pos, FILE *arq) {
+    NodeDisk no;
+    fseek(arq, pos, SEEK_SET);
+    fread(&no, sizeof(NodeDisk), 1, arq);
+    imprime_node(no);
+    if (no.is_leaf == 0) 
+        for (unsigned int i=0; i <= no.num_keys; i++) {
+            imprime_arvore(no.ptrs[i], arq);
+        }
+}
+
 int main(){
 
     FILE *arq;
@@ -15,13 +26,10 @@ int main(){
     root = insert(root, 45, 10);
 
     printTree(root);
-    gravaTree(root, 0,arq);
-   
-    NodeDisk x;
-    fseek(arq, 0, SEEK_SET);
-    fread(&x, sizeof(NodeDisk), 1, arq);
-    imprime_node(x);
+    gravaTree(root, -1, arq);
+    fclose(arq);
 
+    cout << endl << endl << "LENDO ARVORE DO ARQUIVO" << endl;
+    arq = fopen("BPlusTree.bin", "rb+");
+    imprime_arvore(0, arq);
 }
-
-
