@@ -15,14 +15,12 @@ int main(){
     root = insert(root, 45, 10);
 
     printTree(root);
-
-   gravaTree(root, 0,arq);
+    gravaTree(root, 0,arq);
    
-   NodeDisk x;
-   fseek(arq, 0, SEEK_SET);
-   fread(&x, sizeof(NodeDisk), 1, arq);
-   imprime_node(x);
-
+    NodeDisk x;
+    fseek(arq, 0, SEEK_SET);
+    fread(&x, sizeof(NodeDisk), 1, arq);
+    imprime_node(x);
 
 }
 

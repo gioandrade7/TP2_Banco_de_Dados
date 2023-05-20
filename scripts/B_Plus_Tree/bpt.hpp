@@ -334,8 +334,8 @@ void imprime_node(NodeDisk no){
             cout << "key " << i << " = " << no.keys[i] << endl;
         }
         for(int i = 0; i <= no.num_keys; i++){
-            block *x = (block*)no.ptrs[i];
-            cout << "block " << i << " = " << x->offset << endl;
+            int x = no.ptrs[i];
+            cout << "block " << i << " = " << x << endl;
         }
     }
 }
@@ -389,7 +389,7 @@ unsigned int gravaTree(node *root, unsigned int parent, FILE *arq){
 
     if (root->is_leaf) return pos;
 
-    for (unsigned int i = 0; i < root->num_keys; i++) {
+    for (unsigned int i = 0; i <= root->num_keys; i++) {
         temp.ptrs[i] = gravaTree((node *)root->ptrs[i], pos, arq);
     }
 
