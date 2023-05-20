@@ -2,6 +2,9 @@
 #define HASH_HPP
 
 #include "../Bucket/bucket.hpp"
+#include "../B_Plus_Tree/bpt.hpp"
+#include <climits> // pelo INT_MAX
+#include <string>
 
 using namespace std;
 
@@ -33,8 +36,17 @@ int hashFunction(int key) {
     return result;
 }
 
+int hashStringFunction(string str){
+  unsigned long hash = 0;
+
+  for (char c : str)
+      hash = c + (hash << 6) + (hash << 16) - hash;
+
+  return hash % (INT_MAX + 1ULL);
+}
+
 //Função que insere o Registro na Hash
-bool insertRegistroHashTable(Registro registro, ofstream &dataFileWrite, ifstream &dataFileRead){
+bool insertRegistroHashTable(Registro registro, ofstream &dataFileWrite, ifstream &dataFileRead, node *root1, node *root2){
   //Descobre a chave do registro na Hash (seu índice no vetor)
   int key = hashFunction(registro.id);
 
@@ -49,9 +61,19 @@ bool insertRegistroHashTable(Registro registro, ofstream &dataFileWrite, ifstrea
     
     //Verifica se o registro cabe no bloco. Se couber, insere o registro no bloco e retorna true. Se não couber, deleta o bloco da RAM e carrega o próximo
     if(bloco->header.espacoLivre >= (registro.tamanhoRegistro + sizeof(int))){ //Somamos sizeof(int) para considerar o offset que o registro terá ao ser inserido no bloco
-      //Inserir na árvore 1
+      //Inserir nas árvores
+      if(root1 == NULL && root2 == NULL){
+        //Criando árvore 1
+        block *b1 = create_block(blockAddress);
+        root1 = create_tree(registro.id, b1);
 
-      //Inserir na árvore 2
+        //Criando árvore 2
+        block *b2 = create_block(blockAddress);
+        root2 = create_tree(hashStringFunction(registro.titulo), b2);
+      }else{
+        root1 = insert(root1, registro.id, blockAddress);
+        root2 = insert(root2, hashStringFunction(registro.titulo), blockAddress);
+      }
 
       //Inserindo o registro no bloco
       writeRegistroBucket(blockAddress, bloco, registro, dataFileWrite);

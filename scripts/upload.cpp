@@ -95,6 +95,9 @@ int main(int argc, char *argv[]){
     }
 
 
+    node *root1 = NULL;
+    node *root2 = NULL;
+
     cout << "Iniciando a inserção dos registros no arquivo de dados e criação dos índices..." << endl;
 
     //Fazendo a leitura e inserção dos registros
@@ -137,14 +140,25 @@ int main(int argc, char *argv[]){
         Registro registro = createRegistro( id,  ano,  citacoes, atualizacao, titulo, autores, snippet);
 
         //Inserindo o registro no arquivo de dados e criando os índices
-        insertRegistroHashTable(registro, dataFileWrite, dataFileRead);
+        insertRegistroHashTable(registro, dataFileWrite, dataFileRead, root1, root2);
     }
     
     cout << "Inserção dos registros no arquivo de dados e criação dos índices concluída!" << endl << endl;
     
+    //Criando os arquivos de índices
+    FILE *indexFile1, *indexFile2;
+    indexFile1 = fopen("Arquivos/indexFile1.bin", "wb+");
+    indexFile2 = fopen("Arquivos/indexFile2.bin", "wb+");
+
+    //Gravando os índices em disco
+    gravaTree(root1, -1, indexFile1);
+    gravaTree(root2, -1, indexFile2);
+
     //Fechando os arquivos
     dataFileWrite.close();
     dataFileRead.close();
+    fclose(indexFile1);
+    fclose(indexFile2);
     fclose(arquivo);
     return 0;
 }
