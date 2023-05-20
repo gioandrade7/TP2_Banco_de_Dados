@@ -19,6 +19,16 @@ typedef struct node{
     
 } node;
 
+typedef struct nodeDisk{
+
+    bool is_leaf; //verifica se é folha
+    unsigned int ptrs[2*m+1]; //vetor para os nodos filhos, caso não seja folha 
+    unsigned int keys[2*m]; //vetor para as chaves
+    unsigned int parent; //ponteiro para o nodo pai
+    int num_keys; //número de chaves alocadas
+    
+} NodeDisk;
+
 int cut(int size){
     if(size % 2 == 0){return size / 2;}
     else{return size/2 + 1;}
@@ -313,7 +323,7 @@ int pathToLeaves(node *const root, node *child) {
   return length;
 }
 
-void imprime_node(node no){
+void imprime_node(NodeDisk no){
 
     cout << "is_leaf: " << no.is_leaf << endl;
     cout << "num_keys: " << no.num_keys << endl;
@@ -363,18 +373,30 @@ void printTree(node *const root){
     cout << endl;
 }
 
-void gravaTree(node *root, FILE *arq){
+unsigned int gravaTree(node *root, unsigned int parent, FILE *arq){
+    
+    NodeDisk temp;
+    fseek(arq, 0, SEEK_END);
+    unsigned int pos = ftell(arq);
+    temp.is_leaf = root->is_leaf;
+    temp.num_keys = root->num_keys;
+    temp.parent = parent;
 
+    for (unsigned int i=0; i < root->num_keys; i++)
+        temp.keys[i] = root->keys[i];
+
+    fwrite(&temp, sizeof(NodeDisk), 1, arq);
+
+    if (root->is_leaf) return pos;
+
+    for (unsigned int i = 0; i < root->num_keys; i++) {
+        temp.ptrs[i] = gravaTree((node *)root->ptrs[i], pos, arq);
+    }
+
+    fseek(arq, pos, SEEK_SET);
     fwrite(root, sizeof(node), 1, arq);
 
-    /*queue<node*> q;
-    node *c = NULL;
-
-    q.push(root);
-
-    while(!q.empty()){
-
-    }*/
+    return pos;
 }
 
 

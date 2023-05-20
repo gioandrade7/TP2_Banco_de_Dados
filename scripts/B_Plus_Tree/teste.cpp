@@ -16,14 +16,14 @@ int main(){
 
     printTree(root);
 
-   gravaTree(root, arq);
-   node x;
+   gravaTree(root, 0,arq);
+   
+   NodeDisk x;
    fseek(arq, 0, SEEK_SET);
-   fread(&x, sizeof(node), 1, arq);
-   imprime_node(*(node *)x.ptrs[1]);
+   fread(&x, sizeof(NodeDisk), 1, arq);
+   imprime_node(x);
 
 
 }
-
 
 
