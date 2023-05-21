@@ -29,56 +29,71 @@ typedef struct nodeDisk {
     
 } NodeDisk;
 
+/*
+    ESTA FUNÇÃO CALCULA O PONTO DE CORTE (SPLIT) DE UM NÓ DA ÁRVORE
+*/
 int cut(int size){
     if(size % 2 == 0){return size / 2;}
     else{return size/2 + 1;}
 }
 
+/*
+    ESTA FUNÇÃO CRIA UM NOVO NÓ VAZIO PARA A ÁRVORE B+
+*/
 node *create_node(){
     
-    node *new_node = (node *)malloc(sizeof(node));
+    node *new_node = (node *)malloc(sizeof(node)); // ALOCA UM NOVO NÓ NA MEMÓRIA
     if(new_node == NULL) {
         perror("Erro ao criar novo nó\n");
         exit(EXIT_FAILURE);
     }
 
-    new_node->keys = (int*) malloc((m*2)*sizeof(int));
+    new_node->keys = (int*) malloc((m*2)*sizeof(int)); // ALOCA O VETOR DE CHAVES
     if(new_node == NULL) {
         perror("Erro ao criar vetor de chaves do novo nó\n");
         exit(EXIT_FAILURE);
     }
 
-    new_node->ptrs = (void**) malloc((2*m + 1)*sizeof(void*));
+    new_node->ptrs = (void**) malloc((2*m + 1)*sizeof(void*)); // ALOCA O VETOR DE APONTADORES
     if(new_node->ptrs == NULL) {
         perror("Erro ao criar vetor de ponteiros do nó\n");
         exit(EXIT_FAILURE);
     }
 
-    new_node->is_leaf = false;
-    new_node->parent = NULL;
-    new_node->num_keys = 0;
+    new_node->is_leaf = false; // DEFINE O NOVO NÓ COMO NÃO SENDO FOLHA
+    new_node->parent = NULL; // DEFINE QUE O NOVO NÓ NÃO TEM UM NÓ PAI
+    new_node->num_keys = 0; // DEFINE QUE O NOVO NÓ NÃO ARMAZENA CHAVES
 
     return new_node;
 }
 
+/*
+    ESTA FUNÇÃO CRIA UM NOVO NÓ FOLHA PARA A ÁRVORE B+ REUTILIZANDO A FUNÇÃO ANTERIOR
+*/
 node *create_leaf(){
-    node *leaf = create_node();
-    leaf->is_leaf = true;
+    node *leaf = create_node(); // CRIA UM NOVO NÓ
+    leaf->is_leaf = true; // DEFINE QUE O NÓ É FOLHA
     return leaf;
 }
 
+/*
+    ESTA FUNÇÃO CRIA UMA NOVA ÁRVORE B+ NA MEMÓRIA PRINCIPAL, INSERINDO UMA CHAVE NO BLOCO RAIZ (ROOT)
+*/
 node *create_tree(int key, block *b){
 
-    node *root = create_leaf();
-    root->keys[0] = key;
-    root->ptrs[0] = b;
+    node *root = create_leaf(); // CRIA O NÓ RAIZ COMO SENDO FOLHA, POIS NÃO EXISTE OUTROS NÓS INTERNOS
+    root->keys[0] = key; // ARMAZENA A CHAVE NA PRIMEIRA POSIÇÃO DO NÓ RAIZ
+    root->ptrs[0] = b; // ARMAZENA O RESPECTIVO OFFSET DA CHAVE (APONTADOR PARA O REGISTRO NO HASH)
     root->parent = NULL;
-    root->num_keys++;
+    root->num_keys++; // ATUALIZA O CONTADOR DE CHAVES NO NÓ
     root->ptrs[2*m] = NULL; //seta o utlimo ponteiro para NULL, já que nao tem filho
 
     return root;
 }
 
+/*
+    ESTA FUNÇÃO CONSTRÓI UM BLOCO PARA ARMAZENAR O OFFSET DE UMA CHAVE
+*/
 block *create_block(int offset){
     block *b = (block*) malloc(sizeof(block));
     if(b == NULL){
@@ -89,52 +104,63 @@ block *create_block(int offset){
     return b;
 }
 
+/*
+    ESTA FUNÇÃO EFETUA A BUSCA PELA FOLHA ONDE UMA CHAVE DEVE SER INSERIDA
+*/
 node *find_leaf(node* root, int key){
 
     int i = 0;
     node *current = root; //começa a busca na raiz
 
-    while(!current->is_leaf){     // enquanto nó atual não for folha
+    while (!current->is_leaf) {     // A BUSCA PERMANECE NAVEGANDO PELA ÁRVORE ATÉ QUE O NÓ ATUAL SEJA UMA FOLHA
         i = 0;
-        while(i < current->num_keys){
-            if(key >= current->keys[i]){i++;}
-            else{break;}
+        while (i < current->num_keys) { // PERCORRE AS CHAVES DO NÓ ATUAL, ACHANDO PARA QUAL PRÓXIMO NÓ DEVE AVANÇAR
+            if(key >= current->keys[i]) {
+                i++;
+            }
+            else{
+                break;
+            }
         }
-        current = (node *)current->ptrs[i];
+        current = (node *)current->ptrs[i]; // ALTERA O NÓ ATUAL PARA O PRÓXIMO, DE ACORDO COM A CHAVE INFORMADA
     }
     return current;
 }
 
+/*
+    ESTA FUNÇÃO FAZ A INSERÇÃO DE UMA CHAVE NUM NÓ FOLHA ONDE EXISTE ESPAÇO DISPONÍVEL
+*/
 node *insert_leaf(node *leaf, int key, block* b){
-
-    for(int i = 0; i < leaf->num_keys; i++){
-        if(key < leaf->keys[i]){
-            for(int j = leaf->num_keys; j > i ; j--){
+    for(int i = 0; i < leaf->num_keys; i++) { // PERCORRE AS CHAVES DA FOLHA, BUSCA O LOCAL PARA INSERIR A NOVA CHAVE
+        if(key < leaf->keys[i]) { // SE ENCONTROU O LOCAL ENTRE AS CHAVES EXISTENTES
+            for(int j = leaf->num_keys; j > i ; j--) { // DESLOCA AS CHAVES DO PONTO DE INSERÇÃO EM DIANTE, UMA POSIÇÃO A FRENTE
                 leaf->keys[j] = leaf->keys[j - 1];
                 leaf->ptrs[j] = leaf->ptrs[j-1];
             }
-            leaf->keys[i] = key;
+            leaf->keys[i] = key; // INSERE A NOVA CHAVE NA POSIÇÃO CORRETA
             leaf->ptrs[i] = b; 
             leaf->num_keys++;
             return leaf;
         }
     }
-    leaf->keys[leaf->num_keys] = key;
+    leaf->keys[leaf->num_keys] = key; // CASO CONTRÁRIO A NOVA CHAVE SERÁ INSERIDA AO FINAL
     leaf->ptrs[leaf->num_keys] = b;
     leaf->num_keys++;
     return leaf;
 }
 
+/*
+    ESTA FUNÇÃO FAZ A INSERÇÃO NUM NOVO NÓ PAI (ROOT), RECEBENDO OS NÓS FILHOS A ESQUERDA E A DIREITA DA CHAVE 
+*/
 node *insert_new_root(node *left, int key, node *right){
-
-    node *root = create_node();
-    root->keys[0] = key;
-    root->ptrs[0] = left;
-    root->ptrs[1] = right;
-    root->num_keys++;
+    node *root = create_node(); // CRIA O NÓ PAI (ROOT)
+    root->keys[0] = key; // INSERE A NOVA CHAVE
+    root->ptrs[0] = left; // ATUALIZA O APONTADOR A ESQUERDA (MEMOR QUE A CHAVE)
+    root->ptrs[1] = right; // ATUALIZA O APONTADOR A DIREITA (MAIOR OU IGUAL A CHAVE)
+    root->num_keys++; // ATUALIZA O NÚMERO DE CHAVES DO NÓ PAI (ROOT)
     root->parent = NULL;
-    left->parent = root;
-    right->parent = root;
+    left->parent = root; // VINCULA O NÓ PAI COM O FILHO A ESQUERDA
+    right->parent = root; // VINCULA O NÓ PAI COM O FILHO A DIREITA
     return root;
 }
 
@@ -144,8 +170,10 @@ int get_left_index(node *parent, node *left){
     return r;
 }
 
+/*
+    ESTA FUNÇÃO INSERE UMA NOVA CHAVE NUMA POSIÇÃO ESPECÍFICA DE UM NÓ INTERNO (INDEX) E FAZ ATULIZA O APONTADOR PARA O NÓ FOLHA
+*/
 node *insert_node(node *root, node *n, int left_index, int key, node *right){
-
     for(int i = n->num_keys; i > left_index; i--){
         n->ptrs[i + 1] = n->ptrs[i];
         n->keys[i] = n->keys[i-1];
@@ -159,6 +187,9 @@ node *insert_node(node *root, node *n, int left_index, int key, node *right){
 
 node *insert_parent(node* root, node *left, int key, node *right);
 
+/*
+    ESTA FUNÇÃO FAZ O SPLIT DE UM NÓ INTERNO E INSERE UMA NOVA CHAVE
+*/
 node *insert_node_after_split(node *root, node *old_node, int left_index, int key, node *right){
 
     int *temp_keys; //vetor temporário para guardar as chaves
@@ -176,24 +207,28 @@ node *insert_node_after_split(node *root, node *old_node, int left_index, int ke
         exit(EXIT_FAILURE);
     }
 
-    for (int i = 0, j = 0; i < old_node->num_keys + 1; i++, j++) {
-        if (j == left_index + 1){j++;}
+    for (int i = 0, j = 0; i < old_node->num_keys + 1; i++, j++) { // EFETUA A CÓPIA DOS APONTADORES DO NÓ ANTIGO PARA O VETOR TEMPORÁRIO
+        if (j == left_index + 1) { // SALTA A POSIÇÃO ONDE O APONTADOR DA NOVA CHAVE DEVA SER INSERIDO
+            j++;
+        }
         temp_ptrs[j] = old_node->ptrs[i];
     }
 
-    for (int i = 0, j = 0; i < old_node->num_keys; i++, j++) {
-        if (j == left_index){j++;}
+    for (int i = 0, j = 0; i < old_node->num_keys; i++, j++) { // EFETUA A CÓPIA DAS CHAVES DO NÓ ANTIGO PARA O VETOR TEMPORÁRIO
+        if (j == left_index) { // SALTA A POSIÇÃO ONDE A NOVA CHAVE DEVA SER INSERIDA
+            j++;
+        }
         temp_keys[j] = old_node->keys[i];
     }
-
+    // INSERE A NOVA CHAVE E SEU APONTADOR NA POSIÇÃO CORRETA DOS VETORES
     temp_ptrs[left_index + 1] = right;
     temp_keys[left_index] = key;
 
-    int split = cut(2*m+1);
-    node * new_node = create_node();
+    int split = cut(2*m+1); // CALCULA O PONTO DE SPLIT
+    node * new_node = create_node(); // CRIA O NOVO NÓ PARA RECEBER METADE DAS CHAVES DO NÓ ANTIGO
     old_node->num_keys = 0;
     int i = 0;
-    for (i = 0; i < split - 1; i++) {
+    for (i = 0; i < split - 1; i++) { // COPIA AS CHAVES DE VOLTA PARA O NÓ, SOMENTE AS QUE ESTÃO ANTES DO PONTO DE SPLIT
         old_node->ptrs[i] = temp_ptrs[i];
         old_node->keys[i] = temp_keys[i];
         old_node->num_keys++;
@@ -201,7 +236,7 @@ node *insert_node_after_split(node *root, node *old_node, int left_index, int ke
     old_node->ptrs[i] = temp_ptrs[i];
     int k_prime = temp_keys[split - 1];
     int j = 0;
-    for (++i, j = 0; i < 2*m+1; i++, j++) {
+    for (++i, j = 0; i < 2*m+1; i++, j++) { // COPIA AS CHAVES PARA O NOVO NÓ, AQUELAS QUE ESTÃO APÓS O PONTO DE SPLIT
         new_node->ptrs[j] = temp_ptrs[i];
         new_node->keys[j] = temp_keys[i];
         new_node->num_keys++;
@@ -220,87 +255,94 @@ node *insert_node_after_split(node *root, node *old_node, int left_index, int ke
     return insert_parent(root, old_node, k_prime, new_node);
 }
 
+/*
+    ESTÁ FUNÇÃO FAZ A INSERÇÃO DE UMA CHAVE NUM NÓ PAI
+*/
 node *insert_parent(node* root, node *left, int key, node *right){
 
     node *parent = left->parent;
 
-    if(parent == NULL){return insert_new_root(left, key, right);}
+    if (parent == NULL) { 
+        return insert_new_root(left, key, right);
+    }
 
     int left_index = get_left_index(parent, left); //indice do ponteiro do nó à esquerda
 
-    if(parent->num_keys < 2*m){
+    if(parent->num_keys < 2*m) {
         return insert_node(root, parent, left_index, key, right);
     }
 
     return insert_node_after_split(root, parent, left_index, key, right);
-
 }
 
+/*
+    ESTA FUNÇÃO FAZ O SPLIT DE UMA NÓ FOLHA PARA UM NÓ FOLHA SUCESSOR E INSERE UMA NOVA CHAVE
+*/
 node *insert_leaf_after_split(node *root, node *leaf, int key, block *b){
 
     node *new_leaf = create_leaf(); //cria nova folha para o split
     int *temp_keys; //vetor temporário para guardar as chaves
     void **temp_ptrs; // vetor temporário para guardar os ponteiros dos blocks
 
-    temp_keys = (int *) malloc((2*m+1)*sizeof(int));
-    if(temp_keys == NULL){
+    temp_keys = (int *) malloc((2*m+1)*sizeof(int)); // ALOCA UM VETOR TEMPORÁRIO PARA AS CHAVES
+    if (temp_keys == NULL) {
         perror("Erro ao criar vetor de chaves temporário !\n");
         exit(EXIT_FAILURE);
     }
 
-    temp_ptrs = (void **) malloc((2*m+1)*sizeof(void *));
-    if(temp_ptrs == NULL){
+    temp_ptrs = (void **) malloc((2*m+1)*sizeof(void *)); // ALOCA UM VETOR TEMPORÁRIO PARA OS APONTADORES
+    if (temp_ptrs == NULL) {
         perror("Erro ao criar vetor de ponteiros para blocks temporário !\n");
         exit(EXIT_FAILURE);
     }
 
     int insert = 0;
-    while(insert < 2*m && key > leaf->keys[insert]){
+    while (insert < 2*m && key > leaf->keys[insert]) { // ENCONTRA A POSIÇÃO PARA INSERIR A NOVA CHAVE 
         insert ++; // enquanto não chegar ao fim e a chave na posição insert for >= a chave nova, avança
     }
 
-    for(int i, j = 0 ; i < leaf->num_keys; i++, j++){
-        if(j == insert){j++;}
-
+    for(int i, j = 0 ; i < leaf->num_keys; i++, j++) { // COPIA AS CHAVES E APONTADORES, PULANDO A POSIÇÃO ONDE A NOVA CHAVE DEVA SER INSERIDA
+        if (j == insert) { j++; }
         temp_keys[j] = leaf->keys[i];
         temp_ptrs[j] = leaf->ptrs[i]; 
     }
+    temp_keys[insert] = key; // INSERE A CHAVE NO VETOR TEMPORÁRIO
+    temp_ptrs[insert] = b; // INSERE O BLOCO (OFFSET PARA O HASH) NO VETOR DE APONTADORES
 
-    temp_keys[insert] = key;
-    temp_ptrs[insert] = b;
+    leaf->num_keys = 0; // RESETA O CONTADOR DE CHAVES DO NÓ FOLHA
 
-    leaf->num_keys = 0;
+    int split = cut(2*m); // CALCULA O PONTO DE SPLIT
 
-    int split = cut(2*m);
-
-    for(int i = 0; i < split; i++){
+    for(int i = 0; i < split; i++) { // EFETUA A COPIA DAS CHAVES E APONTADORES ATÉ O PONTO DE SPLIT PARA O NÓ FOLHA PREDECESSOR
         leaf->keys[i] = temp_keys[i];
         leaf->ptrs[i] = temp_ptrs[i];
         leaf->num_keys++;
     }
 
-    for(int i = split, j = 0; i < 2*m + 1; i++, j++){
+    for(int i = split, j = 0; i < 2*m + 1; i++, j++) { // EFETUA A CÓPIA DAS CHAVES E APONTADORES APÓS O PONTO DE SPLIT PARA O NÓ FOLHA SUCESSOR
         new_leaf->keys[j] = temp_keys[i];
-        new_leaf -> ptrs[j] = temp_ptrs[i];
-        new_leaf -> num_keys++;
+        new_leaf->ptrs[j] = temp_ptrs[i];
+        new_leaf->num_keys++;
     }
 
     free(temp_keys);
     free(temp_ptrs);
 
-    new_leaf->ptrs[2*m] = leaf->ptrs[2*m];
+    new_leaf->ptrs[2*m] = leaf->ptrs[2*m]; // ENCADEIA OS NÓS FOLHAS
     leaf->ptrs[2*m] = new_leaf;
 
-    for(int i = leaf->num_keys; i <  2*m; i++){leaf->ptrs[i] = NULL;}
+    for(int i = leaf->num_keys; i <  2*m; i++) { leaf->ptrs[i] = NULL; } // ATUALIZA OS APONTADORES DA FOLHA PREDECESSORA
+    for (int i = new_leaf->num_keys; i < 2*m; i++) { new_leaf->ptrs[i] = NULL; } // ATUALIZA OS APONTADORES DA FOLHA SUCESSORA
 
-    for (int i = new_leaf->num_keys; i < 2*m; i++){new_leaf->ptrs[i] = NULL;}
-
-    new_leaf->parent = leaf->parent;
+    new_leaf->parent = leaf->parent; // VINCULA A FOLHA SUCESSORA COM O MESMO NÓ PAI DA FOLHA PREDECESSORA
     int new_key = new_leaf->keys[0];
 
     return insert_parent(root, leaf, new_key, new_leaf);
 }
 
+/*
+    FUNÇÃO PRINCIPAL DE INSERÇÃO DE UMA CHAVE E SEU RESPECTIVO OFFSET (APONTADOR PARA O HASH).
+*/
 node *insert(node *root, int key, int offset){
 
     block *b = create_block(offset); //ponteiro onde o b esta alocado
@@ -313,6 +355,9 @@ node *insert(node *root, int key, int offset){
     return insert_leaf_after_split(root, leaf, key, b);
 }
 
+/*
+    FUNÇÃO UTILITÁRIA PARA A FUNÇÃO DE IMPRESSÃO DA ÁRVORE NA MEMÓRIA
+*/
 int pathToLeaves(node *const root, node *child) {
   int length = 0;
   node *c = child;
@@ -325,7 +370,7 @@ int pathToLeaves(node *const root, node *child) {
 
 
 /*
-    IMPRIME AS INFORMAÇÕES DE UM NÓ DA ÁVORE B+ QUE FOI SALVO NO ARQUIVO
+    IMPRIME AS INFORMAÇÕES DE UM NÓ DA ÁVORE B+ QUE FOI SALVO NO ARQUIVO (NodeDisk).
 */
 void imprime_node(NodeDisk no){
     cout << "\tparent pos: " << no.parent << endl;
@@ -387,6 +432,9 @@ void imprime_arvore(unsigned long pos, FILE *arq) {
         }
 }
 
+/*
+    FUNÇÃO UTILITÁRIA QUE IMPRIME A ÁRVORE B+ NA MEMÓRIA.
+*/
 void printTree(node *const root){
 
     queue<node*> q;
