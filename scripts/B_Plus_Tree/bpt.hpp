@@ -323,6 +323,10 @@ int pathToLeaves(node *const root, node *child) {
   return length;
 }
 
+
+/*
+    IMPRIME AS INFORMAÇÕES DE UM NÓ DA ÁVORE B+ QUE FOI SALVO NO ARQUIVO
+*/
 void imprime_node(NodeDisk no){
     cout << "\tparent pos: " << no.parent << endl;
     cout << "\tis_leaf: " << no.is_leaf << endl;
@@ -337,32 +341,42 @@ void imprime_node(NodeDisk no){
     cout << endl << endl;
 }
 
+/*
+    BUSCA UMA CHAVE DENTRO DE UMA ÁRVORE B+ ARMAZENADA NUM ARQUIVO 
+*/
 unsigned long search_key(unsigned int key, unsigned long pos, unsigned int *n_faccess, FILE *arq) {
-    NodeDisk no;
+    NodeDisk no; // NÓ ATUAL LIDO DO ARQUIVO
     unsigned int i;
-    fseek(arq, pos, SEEK_SET);
-    fread(&no, sizeof(NodeDisk), 1, arq);
-    *n_faccess = *n_faccess + 1;
-    imprime_node(no);
+    
+    fseek(arq, pos, SEEK_SET); // POSICIONA O CURSOR NO POSIÇÃO DO NÓ A SER LIDO
+    fread(&no, sizeof(NodeDisk), 1, arq); // EFETUA A LEITURA DO NÓ
+    *n_faccess = *n_faccess + 1; // ATUALIZA O CONTADOR DE ACESSOS AOS DISCO
+    imprime_node(no); // IMPRIME O NÓ LIDO
 
+    // SE O NÓ ATUAL NÃO É FOLHA, DEVEMOS COMPARAR A KEY COM O VETOR DE CHAVES DO NÓ E ENCONTRAR QUAL O PRÓXIMO NÓ A SER ANALISADO
     if (no.is_leaf == 0) {
+        // PERCORRE O VETOR DE CHAVES DO NÓ, SE A KEY FOI MENOR QUE A CHAVE ATUAL, ENTÃO PEGAMOS O APONTADOR DO NÓ CORRESPONDENTE
         for (i=0; i < no.num_keys; i++)
             if (key < no.keys[i]) 
                 return search_key(key, no.ptrs[i], n_faccess, arq);
+        // SE FORAM VERIFICADAS TODAS AS CHAVES, E A KEY É MAIOR OU IGUAL A ÚLTIMA CHAVE DO VETOR, ENTÃO O ÚLTIMO APONTADOR SERÁ UTILIZADO NA BUSCA (ÚLTIMO NÓ FILHO)
         if (key >= no.keys[i-1])
             return search_key(key, no.ptrs[i], n_faccess, arq);
     }
+    
+    // SE O NÓ ATUAL É UMA FOLHA, TEMOS QUE COMPARAR A KEY COM AS CHAVES NO VETOR DO NÓ
     for (i=0; i < no.num_keys; i++) {
         if (key == no.keys[i])
-            return no.ptrs[i];
+            return no.ptrs[i]; // SE A KEY FOI ENCONTRADA, ENTÃO RETORNAMOS O RESPECTIVO APONTADOR (OFFSET DO HASH)
     }
-    return -1;
+    
+    return -1; // CASO CONTRÁRIO, RETORNAMOS -1 PARA INDICAR QUE A KEY NÃO FOI ENCONTRADA
 }
 
+/*
+    RECEBE O ARQUIVO COM A ÁRVORE B+ (ÍNDICE SECUNDÁRIO) E IMPRIME TODOS OS NÓS POR LARGURA
+*/
 void imprime_arvore(unsigned long pos, FILE *arq) {
-    /*
-        RECEBE O ARQUIVO COM A ÁRVORE B+ (ÍNDICE SECUNDÁRIO) E IMPRIME TODOS OS NÓS POR LARGURA
-    */
     NodeDisk no; // nó atual
     fseek(arq, pos, SEEK_SET); // posiciona o cursor na posição do nó a ser lido
     fread(&no, sizeof(NodeDisk), 1, arq); // efetua a leitura do nó
@@ -406,15 +420,19 @@ void printTree(node *const root){
     cout << endl;
 }
 
+/*
+ GRAVA A ÁRVORE B+ NUM ARQUIVO NO DISCO
+*/
 unsigned long gravaTree(node *root, unsigned long parent, FILE *arq){
     
-    NodeDisk temp;
+    NodeDisk temp; // NÓ TEMPORÁRIO QUE IRÁ RECEBER OS DADOS DO NÓ EM MEMÓRIA A SER GRAVADO NO DISCO
 
-    unsigned long pos = ftell(arq);
-    temp.is_leaf = root->is_leaf;
+    unsigned long pos = ftell(arq); // RECUPERA A POSIÇÃO ATUAL DO ARQUIVO
+    temp.is_leaf = root->is_leaf; // COPIA OS ATRIBUTOS DO NÓ EM MEMÓRIA PARA O NÓ A SER GRAVADO EM DISCO
     temp.num_keys = root->num_keys;
     temp.parent = parent;
 
+    // FAZ A CÓPIA DAS CHAVES EXISTENTES, E AS POSIÇÕES NÃO OCUPADAS SÃO PREENCHIDAS COM -1
     for (unsigned int i=0; i < (2*m); i++) {
         if (i < temp.num_keys)
             temp.keys[i] = root->keys[i];
@@ -422,6 +440,7 @@ unsigned long gravaTree(node *root, unsigned long parent, FILE *arq){
             temp.keys[i] = -1;
     }
 
+    // FAZ A CÓPIA DOS APONTADORES, SE O NÓ FOR FOLHA ELES NÃO SERÃO ALTERADOS POIS CORRESPONDEM A OFFSETS DO HASH, CASO CONTRÁRIO OS APONTADORES SERÃO ATUALIZAODS COM OFFSETS DOS NÓS FILHOS NO ARQUIVO
     for (unsigned int i=0; i <= (2*m); i++) {
         if (i <= temp.num_keys) {
             temp.ptrs[i] = (unsigned long) root->ptrs[i];
@@ -429,31 +448,29 @@ unsigned long gravaTree(node *root, unsigned long parent, FILE *arq){
             temp.ptrs[i] = -1;
         }
     }
-    fwrite(&temp, sizeof(NodeDisk), 1, arq);
+    
+    fwrite(&temp, sizeof(NodeDisk), 1, arq); // GRAVA O NÓ ATUAL NO ARQUIVO
 
+    // SE O NÓ ATUAL FOR UMA FOLHA, NÃO EXISTE MAIS NADA A SER FEITO E A FUNÇÃO RETORNA A POSIÇÃO ONDE O NÓ FOI GRAVADO
     if (temp.is_leaf == 1) {
-        // imprime folha
-        // cout << "nodo na pos: " << pos << endl;
-        // imprime_node(temp);
-        return pos;
+        return pos; 
     } 
+    
+    // SE O NÓ ATUAL NÃO FOR UMA FOLHA, É PRECISO SALVAR SEUS NÓS FILHOS E ATUALIZAR OS VALORES DOS APONTADORES PARA OS RESPECTIVOS OFFSETS DOS NÓS FILHOS
     for (unsigned int i=0; i <= (2*m); i++) {
         if (i <= temp.num_keys) {
-            temp.ptrs[i] = gravaTree((node *)root->ptrs[i], pos, arq);
+            temp.ptrs[i] = gravaTree((node *)root->ptrs[i], pos, arq); // CHAMA A FUNÇÃO RECURSIVAMENTE PARA GRAVAR OS NÓS FILHOS NO ARQUIVO
         } else {
-            temp.ptrs[i] = -1;
+            temp.ptrs[i] = -1; // SE NÃO EXISTE CHAVE ASSOCIADO AO APONTAR ENTÃO ELE RECEBE O VALOR -1 (NULL)
         }
     }
 
-    // imprime interno
-    // cout << "nodo na pos: " << pos << endl;
-    // imprime_node(temp);
-
-    fseek(arq, pos, SEEK_SET);
-    fwrite(&temp, sizeof(NodeDisk), 1, arq);
-    fseek(arq, 0, SEEK_END);
+    // APÓS ATUALIZAR OS APONTADORES COM OS OFFSETS DOS NÓS FILHOS NO ARQUIVO, É PRECISO REESCREVER O NÓ ATUAL NO ARQUIVO
+    fseek(arq, pos, SEEK_SET); // REPOSICIONA O CURSOR DO ARQUIVO NO INÍCIO DO NÓ ATUAL
+    fwrite(&temp, sizeof(NodeDisk), 1, arq); // SOBREESCREVE O NÓ ATUAL COM OS APONTADORES ATUALIZADOS
+    fseek(arq, 0, SEEK_END); // MOVE O CURSOR DO ARQUIVO NOVAMENTE PARA O FINAL
     
-    return pos;
+    return pos; // RETORNA A POSIÇÃO EM QUE FOI SALVO O NÓ ATUAL
 }
 
 #endif
