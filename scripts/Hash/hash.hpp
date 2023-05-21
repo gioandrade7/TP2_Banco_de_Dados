@@ -46,7 +46,7 @@ int hashStringFunction(string str){
 }
 
 //Função que insere o Registro na Hash
-bool insertRegistroHashTable(Registro registro, ofstream &dataFileWrite, ifstream &dataFileRead, node *root1, node *root2){
+pair<node*, node*> insertRegistroHashTable(Registro registro, ofstream &dataFileWrite, ifstream &dataFileRead, node *root1, node *root2){
   //Descobre a chave do registro na Hash (seu índice no vetor)
   int key = hashFunction(registro.id);
 
@@ -62,7 +62,7 @@ bool insertRegistroHashTable(Registro registro, ofstream &dataFileWrite, ifstrea
     //Verifica se o registro cabe no bloco. Se couber, insere o registro no bloco e retorna true. Se não couber, deleta o bloco da RAM e carrega o próximo
     if(bloco->header.espacoLivre >= (registro.tamanhoRegistro + sizeof(int))){ //Somamos sizeof(int) para considerar o offset que o registro terá ao ser inserido no bloco
       //Inserir nas árvores
-      if(root1 == NULL && root2 == NULL){
+      if(root1 == nullptr && root2 == nullptr){
         //Criando árvore 1
         block *b1 = create_block(blockAddress);
         root1 = create_tree(registro.id, b1);
@@ -80,13 +80,13 @@ bool insertRegistroHashTable(Registro registro, ofstream &dataFileWrite, ifstrea
       
       //Apagamos o bloco da memória RAM
       delete bloco;
-      return true;
+      return make_pair(root1, root2);
     }
     delete bloco; // Liberando o bloco antes de carregar o próximo
     bloco = NULL;
   }
   
-  return false;
+  return make_pair(root1, root2);
 }
 
 //Busca um registro na Hash

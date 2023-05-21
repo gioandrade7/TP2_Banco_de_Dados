@@ -12,6 +12,11 @@ int main(int argc, char const **argv){
     //Abrindo o arquivo de dados
     ifstream dataFileRead("Arquivos/dataFile.bin", ios::binary | ios::in);
 
+    if(!dataFileRead.is_open()){
+        cout << "Erro ao abrir o arquivo!" << endl;
+        return 0;
+    }
+
     //Buscando o registro
     Registro* registro_busca = searchRegistroById(atoi(argv[1]), dataFileRead);
 

@@ -95,8 +95,8 @@ int main(int argc, char *argv[]){
     }
 
 
-    node *root1 = NULL;
-    node *root2 = NULL;
+    node *root1 = nullptr;
+    node *root2 = nullptr;
 
     cout << "Iniciando a inserção dos registros no arquivo de dados e criação dos índices..." << endl;
 
@@ -140,7 +140,10 @@ int main(int argc, char *argv[]){
         Registro registro = createRegistro( id,  ano,  citacoes, atualizacao, titulo, autores, snippet);
 
         //Inserindo o registro no arquivo de dados e criando os índices
-        insertRegistroHashTable(registro, dataFileWrite, dataFileRead, root1, root2);
+        pair<node*, node*> roots = insertRegistroHashTable(registro, dataFileWrite, dataFileRead, root1, root2);
+
+        root1 = roots.first;
+        root2 = roots.second;
     }
     
     cout << "Inserção dos registros no arquivo de dados e criação dos índices concluída!" << endl << endl;
