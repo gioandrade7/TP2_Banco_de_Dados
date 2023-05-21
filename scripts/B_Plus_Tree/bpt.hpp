@@ -9,9 +9,9 @@ typedef struct block{
     int offset;
 }block;
 
+// Esta struct corresponde aos nós da árvore na memória principal
 typedef struct node{
-
-    bool is_leaf; //verifica se é folha
+    bool is_leaf; //booleano que indica se o nó é folha
     void **ptrs; //vetor para os nodos filhos, caso não seja folha 
     int *keys; //vetor para as chaves
     struct node *parent; //ponteiro para o nodo pai
@@ -19,8 +19,8 @@ typedef struct node{
     
 } node;
 
-typedef struct nodeDisk{
-
+// Esta struct corresponde aos nós que serão gravados na memória secundária
+typedef struct nodeDisk {
     bool is_leaf; //verifica se é folha
     unsigned long ptrs[2*m+1]; //vetor para os nodos filhos, caso não seja folha 
     unsigned int keys[2*m]; //vetor para as chaves
@@ -337,6 +337,42 @@ void imprime_node(NodeDisk no){
     cout << endl << endl;
 }
 
+unsigned long search_key(unsigned int key, unsigned long pos, unsigned int *n_faccess, FILE *arq) {
+    NodeDisk no;
+    unsigned int i;
+    fseek(arq, pos, SEEK_SET);
+    fread(&no, sizeof(NodeDisk), 1, arq);
+    *n_faccess = *n_faccess + 1;
+    imprime_node(no);
+
+    if (no.is_leaf == 0) {
+        for (i=0; i < no.num_keys; i++)
+            if (key < no.keys[i]) 
+                return search_key(key, no.ptrs[i], n_faccess, arq);
+        if (key >= no.keys[i-1])
+            return search_key(key, no.ptrs[i], n_faccess, arq);
+    }
+    for (i=0; i < no.num_keys; i++) {
+        if (key == no.keys[i])
+            return no.ptrs[i];
+    }
+    return -1;
+}
+
+void imprime_arvore(unsigned long pos, FILE *arq) {
+    /*
+        RECEBE O ARQUIVO COM A ÁRVORE B+ (ÍNDICE SECUNDÁRIO) E IMPRIME TODOS OS NÓS POR LARGURA
+    */
+    NodeDisk no; // nó atual
+    fseek(arq, pos, SEEK_SET); // posiciona o cursor na posição do nó a ser lido
+    fread(&no, sizeof(NodeDisk), 1, arq); // efetua a leitura do nó
+    imprime_node(no); // imprime o nó lido
+    if (no.is_leaf == 0) // se o nó não for uma folha, chama a função recursivamente para cada nó interno
+        for (unsigned int i=0; i <= no.num_keys; i++) {
+            imprime_arvore(no.ptrs[i], arq);
+        }
+}
+
 void printTree(node *const root){
 
     queue<node*> q;
@@ -397,8 +433,8 @@ unsigned long gravaTree(node *root, unsigned long parent, FILE *arq){
 
     if (temp.is_leaf == 1) {
         // imprime folha
-        cout << "nodo na pos: " << pos << endl;
-        imprime_node(temp);
+        // cout << "nodo na pos: " << pos << endl;
+        // imprime_node(temp);
         return pos;
     } 
     for (unsigned int i=0; i <= (2*m); i++) {
@@ -410,8 +446,8 @@ unsigned long gravaTree(node *root, unsigned long parent, FILE *arq){
     }
 
     // imprime interno
-    cout << "nodo na pos: " << pos << endl;
-    imprime_node(temp);
+    // cout << "nodo na pos: " << pos << endl;
+    // imprime_node(temp);
 
     fseek(arq, pos, SEEK_SET);
     fwrite(&temp, sizeof(NodeDisk), 1, arq);
@@ -419,29 +455,5 @@ unsigned long gravaTree(node *root, unsigned long parent, FILE *arq){
     
     return pos;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif
