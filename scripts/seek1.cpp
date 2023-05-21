@@ -1,4 +1,4 @@
-#include "B_Plus_Tree/bpt.hpp"
+#include "Hash/hash.hpp"
 
 using namespace std;
 
@@ -19,8 +19,34 @@ int main(int argc, char const **argv){
         return 0;
     }
 
-    imprime_arvore(atoi(argv[1]), arq);
+    //Abrindo o arquivo de dados
+    ifstream dataFileRead("Arquivos/dataFile.bin", ios::binary | ios::in);
 
+    if(!dataFileRead.is_open()){
+        cout << "Erro ao abrir o arquivo!" << endl;
+        return 0;
+    }
+
+    unsigned int acessos = 0;
+    unsigned int address = search_key(atoi(argv[1]), 0, &acessos, arq);
+
+    if(address == -1){
+        cout << "Registro não encontrado!" << endl;
+        return 0;
+    }
+    else{
+        cout << "Registro encontrado!" << endl;
+        cout << "Número de acessos: " << acessos << endl;
+
+        Bloco *bloco = loadBloco(address, dataFileRead);
+
+        Registro *registro = searchRegistroBloco(bloco, atoi(argv[1]));
+
+        printRegistro(*registro);
+    }
+
+    //Fechando o arquivo de dados
+    dataFileRead.close();
     fclose(arq);
 
     return 0;

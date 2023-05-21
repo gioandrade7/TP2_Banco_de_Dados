@@ -18,11 +18,11 @@ int main(int argc, char const **argv){
     }
 
     //Buscando o registro
-    Registro* registro_busca = searchRegistroById(atoi(argv[1]), dataFileRead);
+    Registro* registro = searchRegistroById(atoi(argv[1]), dataFileRead);
 
     //Imprimindo o registro
-    if(registro_busca != NULL) {
-        printRegistro(*registro_busca);
+    if(registro != NULL) {
+        printRegistro(*registro);
     } else {
         cout << "Registro não encontrado!" << endl;
     }
