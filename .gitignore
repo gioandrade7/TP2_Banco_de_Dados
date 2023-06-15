@@ -1,7 +1,6 @@
 #ignore CSV files
 *.csv
 *.vscode/
-*.txt
 *.bin
 upload
 findrec
