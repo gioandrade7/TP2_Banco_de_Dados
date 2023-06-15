@@ -3,13 +3,13 @@
 export TERM=xterm
 
 clear
-if [ -d "Arquivos" ]
-then
-    echo "O diretório Arquivos já existe."
-else
-    mkdir Arquivos
-    echo "O diretório Arquivos foi criado."
-fi
+# if [ -d "Arquivos" ]
+# then
+#     echo "O diretório Arquivos já existe."
+# else
+#     mkdir Arquivos
+#     echo "O diretório Arquivos foi criado."
+# fi
 
 
 echo -e "Executando o programa ./upload para criar os três arquivos (arquivo de dados, índice primário e secundário)...\n" | tee /app/output/output.txt
